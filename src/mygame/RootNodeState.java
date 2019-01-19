@@ -78,7 +78,7 @@ public class RootNodeState extends AbstractAppState {
     // Version Info
     static private int version_maj = 0;
     static private int version_min = 1;
-    static private int version_revision = 2;
+    static private int version_revision = 3;
     static String version_fork = "App System Demo";
     
     /** Keep track of the objects vital to the scene graph root. **/
@@ -86,7 +86,7 @@ public class RootNodeState extends AbstractAppState {
     public InputManager inputManager;
     //public Node guiNode;
     
-    Material debugPosMat;
+    Material[] debugPosMat;
 
     /** Textures for tiles and player. **/
     private Texture tileTexture;
@@ -140,7 +140,12 @@ public class RootNodeState extends AbstractAppState {
         /** Player scene-stuff. **/
         private Quad playerQuad;
         private Geometry playerGeo;
-        private Node playerNode;
+        private Node playerNode;       
+        
+        private Geometry attackBoxLow;
+        private Geometry attackBoxHigh;
+        private Node attackBoxLowNode;
+        private Node attackBoxHighNode;
         
         /** Weapon scene-stuff. **/
         private Geometry weaponGeo;
@@ -185,7 +190,8 @@ public class RootNodeState extends AbstractAppState {
         /** Places player in the world. **/
         public void createPlayer(){
             // Player pixel size has to be divided by tile pixel size to determine tile dimensions and scale to different screens
-            playerGeo = new Geometry("Player", new Quad((playerWidth / 16) * tileScreenSize, (playerHeight / 16) * tileScreenSize));
+            playerQuad = new Quad((playerWidth / 16) * tileScreenSize, (playerHeight / 16) * tileScreenSize);
+            playerGeo = new Geometry("Player", playerQuad);
 
             /** Data members for the player's weapon. **/
             weaponGeo = new Geometry("Player Weapon", new Quad((playerWidth / 16) * tileScreenSize, (playerHeight / 16) * tileScreenSize));
@@ -203,9 +209,9 @@ public class RootNodeState extends AbstractAppState {
             weaponPivot = new Node("Weapon Pivot");
             
             /** We're going to use a node to keep track of the player. **/
-            playerNode.setLocalTranslation((screenWidth / 2), (screenHeight / 2) - (((playerHeight / 16) * tileScreenSize) / 2), 0);
+            playerNode.setLocalTranslation((screenWidth / 2), (screenHeight / 2), 0);
             
-            playerPosScreen = new Vector2f((screenWidth / 2), (screenHeight / 2) - (((playerHeight / 16) * tileScreenSize) / 2));
+            playerPosScreen = new Vector2f((screenWidth / 2), (screenHeight / 2));
             playerPosTile = new Vector2f(playerPosScreen.x / tileScreenSize , playerPosScreen.y / tileScreenSize);
             playerNode.attachChild(playerGeo);
             playerGeo.setLocalTranslation(-tileScreenSize,0,0);
@@ -219,6 +225,32 @@ public class RootNodeState extends AbstractAppState {
             
             playerNode.attachChild(weaponNode);
             guiNode.attachChild(playerNode);
+            
+            /** Data members for the debug position marker for mobs. **/
+            Quad quad = new Quad((1) * tileScreenSize, (1) * tileScreenSize);
+            Geometry geo = new Geometry("Player Pos Marker", quad);
+
+            /** Set the proper Material to the Geometry and attach to Node. **/
+            geo.setMaterial(debugPosMat[1]);
+            playerNode.attachChild(geo);
+            geo.setLocalTranslation(-0.5f * tileScreenSize,-0.5f *tileScreenSize,0.5f);
+            
+            attackBoxLow = new Geometry("Attk Box L", quad);
+            attackBoxHigh = new Geometry("Attk Box H", quad);
+            
+            attackBoxLowNode = new Node("Weapon Pivot L");
+            attackBoxHighNode = new Node("Weapon Pivot H");
+            
+            attackBoxLow.setMaterial(debugPosMat[2]);
+            attackBoxHigh.setMaterial(debugPosMat[3]);
+            
+            attackBoxLowNode.attachChild(attackBoxLow);
+            attackBoxHighNode.attachChild(attackBoxHigh);
+            
+            attackBoxLow.setLocalTranslation(-0.5f * tileScreenSize,-0.5f *tileScreenSize,0.5f);
+            attackBoxHigh.setLocalTranslation(-0.5f * tileScreenSize,-0.5f *tileScreenSize,0.5f);
+            playerNode.attachChild(attackBoxLowNode);
+            playerNode.attachChild(attackBoxHighNode);
         }
         
         /** Update player frame animation and movement. **/
@@ -611,10 +643,12 @@ public class RootNodeState extends AbstractAppState {
         /** Create mob. **/
         public void createMob(){
             // Create the required scene-graph elements for a Zombie
-            mobGeo = new Geometry("Mob - Zombie", new Quad(2 * tileScreenSize, 3 * tileScreenSize));
-            mobGeo.setLocalTranslation(-tileScreenSize,(1.5f) * tileScreenSize,0);
+            mobQuad = new Quad(2 * tileScreenSize, 3 * tileScreenSize);            
+            mobGeo = new Geometry("Mob - Zombie", mobQuad);
+            mobGeo.setLocalTranslation(-tileScreenSize,-(1.5f) * tileScreenSize,0);
             /** Giving the mob a Node might help with Controls later... **/
             mobNode = new Node("Zombie Node");
+            mobNode.setLocalTranslation(mobWorldX, mobWorldY, 0);
             
             /** Set the proper Material to the Geometry and attach to guiNode.  **/
             mobGeo.setMaterial(mobMatList[0][0]);
@@ -622,17 +656,17 @@ public class RootNodeState extends AbstractAppState {
             // v3 Addition, set the player position members
             
             mobNode.attachChild(mobGeo);
-            mobNode.setLocalTranslation(mobWorldX, mobWorldY, 0);
+            
             
             /** Since this class is also a control, let's control the node via this class. **/
             //mobNode.addControl(this);
             
             /** Data members for the debug position marker for mobs. **/
             Quad quad = new Quad((1) * tileScreenSize, (1) * tileScreenSize);
-            Geometry geo = new Geometry("Player Weapon", quad);
+            Geometry geo = new Geometry("Mob Position Marker", quad);
 
             /** Set the proper Material to the Geometry and attach to Node. **/
-            geo.setMaterial(debugPosMat);
+            geo.setMaterial(debugPosMat[0]);
             mobNode.attachChild(geo);
             geo.setLocalTranslation(-tileScreenSize,-tileScreenSize,0.5f);
         }
@@ -931,6 +965,7 @@ public class RootNodeState extends AbstractAppState {
         setupMobSpriteData();
         
         /** Create player Geomety. **/
+        debugPosImage();
         buildNewPlayer();
         
         /** Create the TileMap. **/
@@ -958,7 +993,7 @@ public class RootNodeState extends AbstractAppState {
         
         /** Create Mob Prefab. **/
         setupMobPrefab();
-        debugPosImage();
+        
         
         // Let's play around with random numbers with normalized distrobution
         System.out.println("Spawn mobs");
@@ -1067,18 +1102,33 @@ public class RootNodeState extends AbstractAppState {
         imgHeight = 16;
         depth = 4;
         Image debugImage = new Image(Image.Format.BGRA8, imgWidth, imgHeight, BufferUtils.createByteBuffer(depth * imgWidth * imgHeight), null, ColorSpace.sRGB); 
+        Image debugImage2 = new Image(Image.Format.BGRA8, imgWidth, imgHeight, BufferUtils.createByteBuffer(depth * imgWidth * imgHeight), null, ColorSpace.sRGB); 
+        Image debugImage3 = new Image(Image.Format.BGRA8, imgWidth, imgHeight, BufferUtils.createByteBuffer(depth * imgWidth * imgHeight), null, ColorSpace.sRGB); 
+        Image debugImage4 = new Image(Image.Format.BGRA8, imgWidth, imgHeight, BufferUtils.createByteBuffer(depth * imgWidth * imgHeight), null, ColorSpace.sRGB); 
         ImageRaster raster = ImageRaster.create(debugImage);
+        ImageRaster raster2 = ImageRaster.create(debugImage2);
+        ImageRaster raster3 = ImageRaster.create(debugImage3);
+        ImageRaster raster4 = ImageRaster.create(debugImage4);
         
         for(int copyX = 0; copyX < 16; copyX++){
             for(int copyY = 0; copyY < 16; copyY++){
                 //ColorRGBA pixel = tileRaster.getPixel(copyX + (tx * imgWidth),copyY + (ty * imgHeight));
                 
-                if(copyX == 6 || copyX == 7){
+                if(copyX == 7 || copyX == 8){
                     raster.setPixel(copyX, copyY, ColorRGBA.Red);
-                }else if(copyY == 6 || copyY == 7){
+                    raster2.setPixel(copyX, copyY, ColorRGBA.Yellow);
+                    raster3.setPixel(copyX, copyY, ColorRGBA.Cyan);
+                    raster4.setPixel(copyX, copyY, ColorRGBA.Magenta);
+                }else if(copyY == 7 || copyY == 8){
                     raster.setPixel(copyX, copyY, ColorRGBA.Red);
+                    raster2.setPixel(copyX, copyY, ColorRGBA.Yellow);
+                    raster3.setPixel(copyX, copyY, ColorRGBA.Cyan);
+                    raster4.setPixel(copyX, copyY, ColorRGBA.Magenta);
                 }else{
                     raster.setPixel(copyX, copyY, ColorRGBA.BlackNoAlpha);
+                    raster2.setPixel(copyX, copyY, ColorRGBA.BlackNoAlpha);
+                    raster3.setPixel(copyX, copyY, ColorRGBA.BlackNoAlpha);
+                    raster4.setPixel(copyX, copyY, ColorRGBA.BlackNoAlpha);
                 }
             }
         }
@@ -1086,9 +1136,36 @@ public class RootNodeState extends AbstractAppState {
         Texture2D debugTexture = new Texture2D(debugImage);
         debugTexture.setMagFilter(Texture.MagFilter.Nearest);
         debugTexture.setMinFilter(Texture.MinFilter.NearestNoMipMaps);
-        debugPosMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        debugPosMat.setTexture("ColorMap",debugTexture);
-        debugPosMat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+        
+        Texture2D debugTexture2 = new Texture2D(debugImage2);
+        debugTexture2.setMagFilter(Texture.MagFilter.Nearest);
+        debugTexture2.setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+        
+        Texture2D debugTexture3 = new Texture2D(debugImage3);
+        debugTexture3.setMagFilter(Texture.MagFilter.Nearest);
+        debugTexture3.setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+        
+        Texture2D debugTexture4 = new Texture2D(debugImage4);
+        debugTexture4.setMagFilter(Texture.MagFilter.Nearest);
+        debugTexture4.setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+        
+        debugPosMat = new Material[4];
+        
+        debugPosMat[0] = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        debugPosMat[0].setTexture("ColorMap",debugTexture);
+        debugPosMat[0].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+        
+        debugPosMat[1] = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        debugPosMat[1].setTexture("ColorMap",debugTexture2);
+        debugPosMat[1].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+        
+        debugPosMat[2] = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        debugPosMat[2].setTexture("ColorMap",debugTexture3);
+        debugPosMat[2].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+        
+        debugPosMat[3] = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        debugPosMat[3].setTexture("ColorMap",debugTexture4);
+        debugPosMat[3].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
     }
     
     /** Previous code for tile texture setup moved here. **/
