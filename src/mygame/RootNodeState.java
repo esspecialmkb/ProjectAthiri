@@ -33,7 +33,6 @@
 package mygame;
 
 import Cartography.TileMap;
-import Utility.Materials;
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
@@ -57,7 +56,6 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.control.AbstractControl;
-import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
@@ -128,6 +126,7 @@ public class RootNodeState extends AbstractAppState {
     private boolean left = false;
     private boolean right = false;
     private int facing = 0; // 1 - South, 2 - North, 4 - West, 8 - East
+    private int lastFacing = 0;
     /** Player scene-graph data. **/
     private Quad playerQuad;
     private Geometry playerGeo;
@@ -211,7 +210,10 @@ public class RootNodeState extends AbstractAppState {
             /** We're going to use a node to keep track of the player. **/
             playerNode.setLocalTranslation((screenWidth / 2), (screenHeight / 2), 0);
             
-            playerPosScreen = new Vector2f((screenWidth / 2), (screenHeight / 2));
+            //playerPosScreen = new Vector2f((screenWidth / 2), (screenHeight / 2));
+            
+            Vector3f clone = playerNode.getLocalTranslation().clone();
+            playerPosScreen = new Vector2f(clone.x, clone.y);
             playerPosTile = new Vector2f(playerPosScreen.x / tileScreenSize , playerPosScreen.y / tileScreenSize);
             playerNode.attachChild(playerGeo);
             playerGeo.setLocalTranslation(-tileScreenSize,0,0);
@@ -224,7 +226,11 @@ public class RootNodeState extends AbstractAppState {
             weaponGeo.setLocalTranslation(-tileScreenSize,0,0);
             
             playerNode.attachChild(weaponNode);
-            guiNode.attachChild(playerNode);
+            
+            /** Add to map instead of guiNode, playerNode needs screenPos translation now relative to map (not screen). **/
+            //guiNode.attachChild(playerNode);
+            map.getNode().attachChild(playerNode);
+            playerNode.setLocalTranslation(clone);
             
             /** Data members for the debug position marker for mobs. **/
             Quad quad = new Quad((1) * tileScreenSize, (1) * tileScreenSize);
@@ -250,7 +256,9 @@ public class RootNodeState extends AbstractAppState {
             attackBoxLow.setLocalTranslation(-0.5f * tileScreenSize,-0.5f *tileScreenSize,0.5f);
             attackBoxHigh.setLocalTranslation(-0.5f * tileScreenSize,-0.5f *tileScreenSize,0.5f);
             playerNode.attachChild(attackBoxLowNode);
+            attackBoxLowNode.setLocalTranslation(-2f * tileScreenSize,-2f *tileScreenSize,0.5f);
             playerNode.attachChild(attackBoxHighNode);
+            attackBoxHighNode.setLocalTranslation(2f * tileScreenSize,0f *tileScreenSize,0.5f);
         }
         
         /** Update player frame animation and movement. **/
@@ -264,6 +272,19 @@ public class RootNodeState extends AbstractAppState {
             // For now, no real movement, just making sure the right frames play for the right direction
             // v3 move the player (X and Y ) according to the animation that's played
             if(down){
+                //lastFacing = 0;
+                switch(facing){
+                    case 1: //Pressing up at the same time, disable up
+                        up = false;
+                        break;
+                    case 2: // Left
+                        left = false;
+                        break;
+                    case 3: // Right
+                        right = false;
+                        break;
+                        
+                }
                 facing = 0;
                 //Move the player DOWN
                 deltaY -= (walkSpeed * tileScreenSize);
@@ -295,6 +316,17 @@ public class RootNodeState extends AbstractAppState {
                 } 
                 //  */
             }if(up){
+                switch(facing){
+                    case 0: //Pressing down at the same time, disable up
+                        down = false;
+                        break;
+                    case 2: // Left
+                        left = false;
+                        break;
+                    case 3: // Right
+                        right = false;
+                        break; 
+                }
                 facing = 1;
                 // Simulate walk cycle - north
                 //Move the player
@@ -325,6 +357,17 @@ public class RootNodeState extends AbstractAppState {
                     }
                 } // */
             }if(left){
+                switch(facing){
+                    case 0: //Pressing down at the same time, disable up
+                        down = false;
+                        break;
+                    case 1: // Down
+                        up = false;
+                        break;
+                    case 3: // Right
+                        right = false;
+                        break; 
+                }
                 facing = 2;
                 // Simulate walk cycle - west
                 //Move the player
@@ -356,6 +399,17 @@ public class RootNodeState extends AbstractAppState {
                     }
                 } // */
             }if(right){
+                switch(facing){
+                    case 0: //Pressing down at the same time, disable up
+                        down = false;
+                        break;
+                    case 1: // Down
+                        up = false;
+                        break;
+                    case 2: // Right
+                        left = false;
+                        break; 
+                }
                 facing = 3;
                 // Simulate walk cycle - east
                 //Move the player
@@ -391,7 +445,9 @@ public class RootNodeState extends AbstractAppState {
             map.getNode().move(deltaX * tpf * -1, deltaY * tpf * -1, 0);
             map.offsetX -= deltaX *tpf;
             map.offsetY -= deltaY *tpf;
+            playerNode.move(deltaX * tpf, deltaY * tpf, 0);
             playerPosScreen.addLocal(new Vector2f(deltaX * tpf,deltaY * tpf));
+            //System.out.println("Position of player" + playerPosScreen);
             playerPosTile.addLocal(new Vector2f((deltaX * tpf)/tileScreenSize,(deltaY * tpf)/tileScreenSize));
         }
         
@@ -470,6 +526,9 @@ public class RootNodeState extends AbstractAppState {
                 Vector3f calcP = new Vector3f(0,0,0);
                 Quaternion calcR = new Quaternion();
                 Quaternion calcRT = new Quaternion();
+                Vector3f hitBoxL = new Vector3f(0,0,0);
+                Vector3f hitBoxH = new Vector3f(0,0,0);
+                Vector3f localTranslation = playerNode.getLocalTranslation();
                 /** Calculate an interpolated rotation between start and end. **/
                 //down
                 if(facing == 0){
@@ -477,7 +536,13 @@ public class RootNodeState extends AbstractAppState {
                     calcRT.set(new Quaternion().fromAngleAxis(FastMath.DEG_TO_RAD * 270, Vector3f.UNIT_Z));
                     calcP.set(0,0,0);
                     calcPT.set(0,0,0);
-                    testWeapon(playerPosScreen.x - (1.25f * tileScreenSize),playerPosScreen.y - (2 * tileScreenSize),(4 * tileScreenSize),(2 * tileScreenSize));
+                    
+                    hitBoxL.set((-2 * tileScreenSize),(-2 * tileScreenSize),0.5f);
+                    //System.out.println("PlayerPos" + playerPosScreen + ", Position of player hitbox" + hitBoxL);
+                    hitBoxH.set(hitBoxL.add(new Vector3f((4 * tileScreenSize),(2 * tileScreenSize),0)));
+                    attackBoxLowNode.setLocalTranslation(hitBoxL);
+                    attackBoxHighNode.setLocalTranslation(hitBoxH);
+                    testWeapon(hitBoxL.x,hitBoxL.y,(4 * tileScreenSize),(2 * tileScreenSize));
                 }
                 //up
                 if(facing == 1){
@@ -485,7 +550,12 @@ public class RootNodeState extends AbstractAppState {
                     calcRT.set(new Quaternion().fromAngleAxis(FastMath.DEG_TO_RAD * 360 + 90, Vector3f.UNIT_Z));
                     calcP.set(0 ,3 * tileScreenSize ,0);
                     calcPT.set(0 ,3 * tileScreenSize ,0);
-                    testWeapon(playerPosScreen.x - (1.25f * tileScreenSize),playerPosScreen.y + (2.5f * tileScreenSize),(4.5f * tileScreenSize),(2.5f * tileScreenSize));
+                    
+                    hitBoxL.set((-2f * tileScreenSize),(2.5f * tileScreenSize),0.5f);
+                    hitBoxH.set(hitBoxL.add(new Vector3f((4 * tileScreenSize),(2 * tileScreenSize),0)));
+                    attackBoxLowNode.setLocalTranslation(hitBoxL);
+                    attackBoxHighNode.setLocalTranslation(hitBoxH);
+                    testWeapon(hitBoxL.x,hitBoxL.y,(4f * tileScreenSize),(2f * tileScreenSize));
                 }
                 //left
                 if(facing == 2){
@@ -493,7 +563,12 @@ public class RootNodeState extends AbstractAppState {
                     calcRT.set(new Quaternion().fromAngleAxis(FastMath.DEG_TO_RAD * 180, Vector3f.UNIT_Z));
                     calcP.set(-(tileScreenSize / 2) ,1.5f * tileScreenSize,0);
                     calcPT.set(-(tileScreenSize / 2) ,1.5f * tileScreenSize,0);
-                    testWeapon(playerPosScreen.x - (2.5f * tileScreenSize), playerPosScreen.y - (0.75f * tileScreenSize),(2.5f * tileScreenSize),(4.5f * tileScreenSize));
+                    
+                    hitBoxL.set((-2.3f * tileScreenSize),(0f * tileScreenSize),0.5f);
+                    hitBoxH.set(hitBoxL.add(new Vector3f((2 * tileScreenSize),(4 * tileScreenSize),0)));
+                    attackBoxLowNode.setLocalTranslation(hitBoxL);
+                    attackBoxHighNode.setLocalTranslation(hitBoxH);
+                    testWeapon(hitBoxL.x,hitBoxL.y,(2f * tileScreenSize),(4f * tileScreenSize));
                 }
                 //right
                 if(facing == 3){
@@ -501,7 +576,12 @@ public class RootNodeState extends AbstractAppState {
                     calcRT.set(new Quaternion().fromAngleAxis(FastMath.DEG_TO_RAD * 360, Vector3f.UNIT_Z));
                     calcP.set(tileScreenSize / 2 ,1.5f * tileScreenSize,0);
                     calcPT.set(tileScreenSize / 2 ,1.5f * tileScreenSize,0);
-                    testWeapon(playerPosScreen.x, playerPosScreen.y - (0.75f * tileScreenSize),(2.5f * tileScreenSize),(4.5f * tileScreenSize));
+                    
+                    hitBoxL.set((0.3f * tileScreenSize),(0f * tileScreenSize),0.5f);
+                    hitBoxH.set(hitBoxL.add(new Vector3f((2 * tileScreenSize),(4 * tileScreenSize),0)));
+                    attackBoxLowNode.setLocalTranslation(hitBoxL);
+                    attackBoxHighNode.setLocalTranslation(hitBoxH);
+                    testWeapon(hitBoxL.x,hitBoxL.y,(2f * tileScreenSize),(4f * tileScreenSize));
                 }
                 
                 
@@ -543,13 +623,13 @@ public class RootNodeState extends AbstractAppState {
         }
         
         public boolean testWeapon(float x, float y ,float sX, float sY){
+            x += playerPosScreen.x;
+            y += playerPosScreen.y;
             boolean hitDetected = false;
             if(mobControls.size() > 0){
                 for(int m = 0; m < mobControls.size(); m++){
                     Vector2f mPos = mobControls.get(m).getPos();
-                    mPos.subtractLocal((6 * tileScreenSize) + (tileScreenSize/2),0);
-                    
-                    
+                    //mPos.subtractLocal((6 * tileScreenSize) + (tileScreenSize/2),0);
                     
                     boolean dXn = mPos.x > x;
                     boolean dXp = mPos.x < (x + sX);
@@ -560,7 +640,7 @@ public class RootNodeState extends AbstractAppState {
                     boolean dYp2 = mPos.y < (y + sY + (1.5f *tileScreenSize));
                     if((dXn && dXp) && ((dYn && dYp) || (dYn2 && dYp2))){
                         hitDetected = true;
-                        System.out.println("HIT!!!");
+                        //System.out.println("HIT!!!");
                         mobControls.get(m).hit(10f);
                     }
                 }
@@ -631,7 +711,7 @@ public class RootNodeState extends AbstractAppState {
         /** Tell the mob that it was hit. **/
         public void hit(float damage){
             if(!hitDebounce){
-                //System.out.println("IM HIT!!! #" + this.id + ", " + damageThisFrame + " damage");
+                System.out.println("IM HIT!!! #" + this.id + ", " + damageThisFrame + " damage");
                 hitDebounce = true;
                 hitByPlayer = true;
                 hitTimeLeft = hitTime;
@@ -668,7 +748,7 @@ public class RootNodeState extends AbstractAppState {
             /** Set the proper Material to the Geometry and attach to Node. **/
             geo.setMaterial(debugPosMat[0]);
             mobNode.attachChild(geo);
-            geo.setLocalTranslation(-tileScreenSize,-tileScreenSize,0.5f);
+            geo.setLocalTranslation(-0.5f * tileScreenSize,-0.5f * tileScreenSize,0.5f);
         }
         
         public void destroyMob(){
@@ -682,12 +762,15 @@ public class RootNodeState extends AbstractAppState {
                 // spatial.rotate(tpf,tpf,tpf); // example behaviour
                 Vector3f pPos = playerObj.getPos();
                 Vector3f diff = pPos.subtract(mobWorldX,mobWorldY,0);
-                diff.subtractLocal((6 * tileScreenSize),0,0);
+                
+                /** Now that the player is parented to the map, no need for this offset!. **/
+                //diff.subtractLocal((6 * tileScreenSize),0,0);
                 deltaX = 0;
                 deltaY = 0;
                 //System.out.println("length " + diff.length());
                 
                 //Save the cpu-heavy stuff for active mobs
+                /** This can also be encapsulated into an 'Aggro State'. **/
                 if((diff.length() < (10 * tileScreenSize) && diff.length() > (2 * tileScreenSize))|| (diff.length() > -(10 * tileScreenSize) && diff.length() < (-2 * tileScreenSize))){
                     
                     diff.normalizeLocal();
@@ -717,6 +800,24 @@ public class RootNodeState extends AbstractAppState {
                     //If we have not done it yet, add to active mobs list
                     if(!nearPlayer){
                         nearPlayer = true;
+                    }
+                    //Check for removal at the end of the loop
+                    if(health < 0.0f){
+                        //mob.destroyMob();
+                        System.out.println("IM DEAD!!! #" + this.id);
+                        map.getNode().detachChild(spatial);
+                        spatial.removeControl(this);
+                    }else{
+                        //System.out.println("Mob #" + id + " Health :" + health);
+                    }
+                    //Remove from active mob list, if we havent already
+                    if(nearPlayer){
+                        nearPlayer = false;
+                    }
+                    if(damageThisFrame > 0){
+                        System.out.println("IM HIT!!! #" + this.id + ", " + damageThisFrame + " damage: " + (health - damageThisFrame));
+                        health = health - damageThisFrame;
+                        damageThisFrame = 0;
                     }
                 }else{
                     //Check for removal at the end of the loop
@@ -966,15 +1067,17 @@ public class RootNodeState extends AbstractAppState {
         
         /** Create player Geomety. **/
         debugPosImage();
-        buildNewPlayer();
+        
         
         /** Create the TileMap. **/
         map = new TileMap(tileScreenSize, 4, tileMatList);
 
-        map.getNode().setLocalTranslation((screenWidth/2) - (tileScreenSize * 8),0,-0.5f);
+        map.getNode().setLocalTranslation(0,0,-0.5f);
 
         //sysLog("Gen map");
         map.genOverworld();
+        
+        buildNewPlayer(); // Build player after map now
         
         guiNode.attachChild(map.getNode());
         
