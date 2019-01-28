@@ -36,6 +36,8 @@ import com.jme3.app.Application;
 import com.jme3.app.BasicApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.system.AppSettings;
 
 
@@ -43,7 +45,8 @@ import com.jme3.system.AppSettings;
  *  New AppState based app harness.
  *
  *  @author    Michael A. Bradford
- *  @version 0.0.3 - Animation update
+ *  @version 0.0.4 - Mobs update
+ *  version 0.0.3 - Animation update
  *  version 0.0.2 - Harness completed
  */
 public class NewAppDemo extends BasicApplication {
@@ -51,8 +54,10 @@ public class NewAppDemo extends BasicApplication {
     // Version Info
     static private int version_maj = 0;
     static private int version_min = 0;
-    static private int version_revision = 2;
+    static private int version_revision = 4;
     static String version_fork = "App System Demo";
+    
+    public RootNodeState demoState;
 
     public static void main(String[] args){
         NewAppDemo app = new NewAppDemo();
@@ -69,11 +74,11 @@ public class NewAppDemo extends BasicApplication {
     public void simpleInitApp() {
         System.out.println("Initialize");
         flyCam.setEnabled(false);
-        RootNodeState state = new RootNodeState();
-        state.setRes(cam.getWidth(), cam.getHeight());
-        viewPort.attachScene(state.getRootNode());
-        getGuiViewPort().attachScene(state.getGUIRootNode());
-        stateManager.attach(state);        
+        demoState = new RootNodeState();
+        demoState.setRes(cam.getWidth(), cam.getHeight());
+        viewPort.attachScene(demoState.getRootNode());
+        getGuiViewPort().attachScene(demoState.getGUIRootNode());
+        stateManager.attach(demoState);        
     }
 
     @Override
@@ -82,8 +87,15 @@ public class NewAppDemo extends BasicApplication {
     }
     
     class Game extends AbstractAppState{
+        //private Node rootNode = new Node("Root Node");
+        //private Node guiNode = new Node("GUI Node");
+        
+        public Geometry mainMenu;
+        public int screenUnitSize;
+        
         @Override
         public void initialize(AppStateManager stateManager, Application app){
+            super.initialize(stateManager, app);
             
         }
         

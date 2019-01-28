@@ -68,7 +68,9 @@ import java.util.ArrayList;
  *  AppState based app harness.
  *
  *  @author    Michael A. Bradford
- *  @version 0.1.0 - Steering Behaviors and AbstractControls. 
+ *  @version 0.2.0 - MobControl damage/death logic debugging 
+ *  version 0.1.1 - Hit box debugging
+ *  version 0.1.0 - Steering Behaviors and AbstractControls.
  *  version 0.0.1 - Combat animation
  *  version 0.0.0 - TileMap Demo refactor completed
  */
@@ -268,6 +270,11 @@ public class RootNodeState extends AbstractAppState {
             deltaY = 0.0f;
 
             frameTime += tpf;
+            boolean downDisable = false;
+            boolean upDisable = false;
+            boolean leftDisable = false;
+            boolean rightDisable = false;
+            
             /** When the player presses any of the movement keys, play the animation. **/
             // For now, no real movement, just making sure the right frames play for the right direction
             // v3 move the player (X and Y ) according to the animation that's played
@@ -275,13 +282,13 @@ public class RootNodeState extends AbstractAppState {
                 //lastFacing = 0;
                 switch(facing){
                     case 1: //Pressing up at the same time, disable up
-                        up = false;
+                        //up = false;
                         break;
                     case 2: // Left
-                        left = false;
+                        //left = false;
                         break;
                     case 3: // Right
-                        right = false;
+                        //right = false;
                         break;
                         
                 }
@@ -318,13 +325,13 @@ public class RootNodeState extends AbstractAppState {
             }if(up){
                 switch(facing){
                     case 0: //Pressing down at the same time, disable up
-                        down = false;
+                        //down = false;
                         break;
                     case 2: // Left
-                        left = false;
+                        //left = false;
                         break;
                     case 3: // Right
-                        right = false;
+                        //right = false;
                         break; 
                 }
                 facing = 1;
@@ -359,13 +366,13 @@ public class RootNodeState extends AbstractAppState {
             }if(left){
                 switch(facing){
                     case 0: //Pressing down at the same time, disable up
-                        down = false;
+                        //down = false;
                         break;
                     case 1: // Down
-                        up = false;
+                        //up = false;
                         break;
                     case 3: // Right
-                        right = false;
+                        //right = false;
                         break; 
                 }
                 facing = 2;
@@ -401,13 +408,13 @@ public class RootNodeState extends AbstractAppState {
             }if(right){
                 switch(facing){
                     case 0: //Pressing down at the same time, disable up
-                        down = false;
+                        //down = false;
                         break;
                     case 1: // Down
-                        up = false;
+                        //up = false;
                         break;
                     case 2: // Right
-                        left = false;
+                        //left = false;
                         break; 
                 }
                 facing = 3;
@@ -758,90 +765,73 @@ public class RootNodeState extends AbstractAppState {
 
         @Override
         protected void controlUpdate(float tpf) {
+            if(damageThisFrame > 0){
+                System.out.println("IM HIT!!! #" + this.id + ", " + damageThisFrame + " damage: " + (health - damageThisFrame));
+                health = health - damageThisFrame;
+                damageThisFrame = 0;
+            }
+            if(health <= 0.0f){
+                //mob.destroyMob();
+                System.out.println("IM DEAD!!! #" + this.id);
+                map.getNode().detachChild(spatial);
+                spatial.removeControl(this);
+                return;
+            }
             //if(spatial != null) {     
-                // spatial.rotate(tpf,tpf,tpf); // example behaviour
-                Vector3f pPos = playerObj.getPos();
-                Vector3f diff = pPos.subtract(mobWorldX,mobWorldY,0);
-                
-                /** Now that the player is parented to the map, no need for this offset!. **/
-                //diff.subtractLocal((6 * tileScreenSize),0,0);
-                deltaX = 0;
-                deltaY = 0;
-                //System.out.println("length " + diff.length());
-                
-                //Save the cpu-heavy stuff for active mobs
-                /** This can also be encapsulated into an 'Aggro State'. **/
-                if((diff.length() < (10 * tileScreenSize) && diff.length() > (2 * tileScreenSize))|| (diff.length() > -(10 * tileScreenSize) && diff.length() < (-2 * tileScreenSize))){
-                    
-                    diff.normalizeLocal();
-                    
-                    //Test if this mob is hit
-                    if(hitByPlayer == true){
-                        //Decrement timer and stun when hit
-                        hitTimeLeft -= tpf;
-                        debounceTimeLeft -= tpf;
-                        if(hitTimeLeft < 0){
-                            hitByPlayer = false;
-                        }if(debounceTimeLeft < 0){
-                            hitDebounce = false;
-                        }
-                    }else{
-                        //Move toward player after stun time expires
-                        deltaX += (walkSpeed * tileScreenSize) * diff.x;
-                        deltaY += (walkSpeed * tileScreenSize) * diff.y;
-                        spatial.move(deltaX * tpf,deltaY * tpf,0);
-                                                
-                        mobWorldX += deltaX * tpf;
-                        mobWorldY += deltaY * tpf;
-                        vX = mobWorldX / tileScreenSize;
-                        vY = mobWorldY / tileScreenSize;
-                    }
-                    
-                    //If we have not done it yet, add to active mobs list
-                    if(!nearPlayer){
-                        nearPlayer = true;
-                    }
-                    //Check for removal at the end of the loop
-                    if(health < 0.0f){
-                        //mob.destroyMob();
-                        System.out.println("IM DEAD!!! #" + this.id);
-                        map.getNode().detachChild(spatial);
-                        spatial.removeControl(this);
-                    }else{
-                        //System.out.println("Mob #" + id + " Health :" + health);
-                    }
-                    //Remove from active mob list, if we havent already
-                    if(nearPlayer){
-                        nearPlayer = false;
-                    }
-                    if(damageThisFrame > 0){
-                        System.out.println("IM HIT!!! #" + this.id + ", " + damageThisFrame + " damage: " + (health - damageThisFrame));
-                        health = health - damageThisFrame;
-                        damageThisFrame = 0;
+            // spatial.rotate(tpf,tpf,tpf); // example behaviour
+            Vector3f pPos = playerObj.getPos();
+            Vector3f diff = pPos.subtract(mobWorldX,mobWorldY,0);
+
+            /** Now that the player is parented to the map, no need for this offset!. **/
+            //diff.subtractLocal((6 * tileScreenSize),0,0);
+            deltaX = 0;
+            deltaY = 0;
+            //System.out.println("length " + diff.length());
+
+            //Save the cpu-heavy stuff for active mobs
+            /** This can also be encapsulated into an 'Aggro State'. **/
+            if((diff.length() < (10 * tileScreenSize) && diff.length() > (2 * tileScreenSize))|| (diff.length() > -(10 * tileScreenSize) && diff.length() < (-2 * tileScreenSize))){
+
+                diff.normalizeLocal();
+
+                //Test if this mob is hit
+                if(hitByPlayer == true){
+                    //Decrement timer and stun when hit
+                    hitTimeLeft -= tpf;
+                    debounceTimeLeft -= tpf;
+                    if(hitTimeLeft < 0){
+                        hitByPlayer = false;
+                    }if(debounceTimeLeft < 0){
+                        hitDebounce = false;
                     }
                 }else{
-                    //Check for removal at the end of the loop
-                    if(health < 0.0f){
-                        //mob.destroyMob();
-                        System.out.println("IM DEAD!!! #" + this.id);
-                        map.getNode().detachChild(spatial);
-                        spatial.removeControl(this);
-                    }else{
-                        //System.out.println("Mob #" + id + " Health :" + health);
-                    }
-                    //Remove from active mob list, if we havent already
-                    if(nearPlayer){
-                        nearPlayer = false;
-                    }
-                    if(damageThisFrame > 0){
-                        System.out.println("IM HIT!!! #" + this.id + ", " + damageThisFrame + " damage: " + (health - damageThisFrame));
-                        health = health - damageThisFrame;
-                        damageThisFrame = 0;
-                    }
-                    
+                    //Move toward player after stun time expires
+                    deltaX += (walkSpeed * tileScreenSize) * diff.x;
+                    deltaY += (walkSpeed * tileScreenSize) * diff.y;
+                    spatial.move(deltaX * tpf,deltaY * tpf,0);
+
+                    mobWorldX += deltaX * tpf;
+                    mobWorldY += deltaY * tpf;
+                    vX = mobWorldX / tileScreenSize;
+                    vY = mobWorldY / tileScreenSize;
                 }
-                
-            //} 
+
+                //If we have not done it yet, add to active mobs list
+                if(!nearPlayer){
+                    nearPlayer = true;
+                }
+                //Check for removal at the end of the loop
+                if(health < 0.0f){
+                    //mob.destroyMob();
+                    System.out.println("IM DEAD!!! #" + this.id);
+                    map.getNode().detachChild(spatial);
+                    spatial.removeControl(this);
+                }else{
+                    //System.out.println("Mob #" + id + " Health :" + health);
+                }
+
+            }
+            
         }
 
         @Override
@@ -1154,6 +1144,7 @@ public class RootNodeState extends AbstractAppState {
     private ActionListener actionListener = new ActionListener(){
         public void onAction(String name, boolean keyPressed, float tpf){
             // 1 - South, 2 - North, 4 - West, 8 - East
+            /** We need to implement input masking here. **/
             if(name.equals("Up")){
                 up = keyPressed;
                 if(keyPressed){
