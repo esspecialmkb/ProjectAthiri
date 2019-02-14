@@ -20,11 +20,11 @@ import java.util.Random;
  */
 public class TileMap{
         /** Data for Tile pages are being refactored. **/
-        private int size;           //  Keep track of tile size (on screen)
-        private int[][] data;       //  This tells the build method which tiles to use
-        private Quad[][] tiles;     //  Meshes used for tiles
-        private Node mapNode;       //  Serves as the 'rootNode' for the tile map
-        private Geometry[][] tileGeo;// Geometries attach the Quads to the scene graph, making them renderable
+        public int size;           //  Keep track of tile size (on screen)
+        public int[][] data;       //  This tells the build method which tiles to use
+        public Quad[][] tiles;     //  Meshes used for tiles
+        public Node mapNode;       //  Serves as the 'rootNode' for the tile map
+        public Geometry[][] tileGeo;// Geometries attach the Quads to the scene graph, making them renderable
         
         /** External material references. **/
         public Material[][] i_tileMatList;
@@ -36,8 +36,11 @@ public class TileMap{
         public float offsetY = 0.0f;   // The offsets let us move the tiles relative to the viewport
         
         /** NEW DATA MEMBERS FOR TILEPAGES. **/
-        private ArrayList<TileMapPage> pages;
-        private int maxPages;
+        public ArrayList<TileMapPage> pages;
+        public int maxPages;
+        
+        /** SERIALIZATION - MANUAL SETUP. **/
+        public TileMap(){}
         
         /**With this class being a prototype, let's build everything in the constructor. **/
         public TileMap(int tileSize){
@@ -64,10 +67,7 @@ public class TileMap{
                     /** Geometry. **/
                     this.tileGeo[dx][dy] = new Geometry("Tile: " + dx + ", " + dy, this.tiles[dx][dy]);
                     this.tileGeo[dx][dy].setLocalTranslation(dx * this.size, dy * this.size, -0.5f);    // Z = -0.5 to keep tilemap behind the player
-                    //  For now, we're using a global material
-                    //  When this class is refactored, we will need a reference to the available Materials
-                    this.tileGeo[dx][dy].setMaterial(i_tileMatList[1][14]);
-                    
+                                        
                     /** For our brute-force method, every geometry is added to the mapNode. **/
                     this.mapNode.attachChild(this.tileGeo[dx][dy]);
                 }
@@ -138,6 +138,7 @@ public class TileMap{
             mapNode.attachChild(mobGeo);*/
         }
         
+        /** This method does not create the map, only sets the tiles. **/
         public void genOverworld(){
             /** RANDOM OVERWORLD GEN WHOO!!!. **/
             
@@ -230,6 +231,9 @@ public class TileMap{
                 System.out.println("origin point: "+ x + ","+y + "| page:"+ pX + "," + pY + "| index:" + dX + "," + dY);
             }
         }
+        
+        /** TileMap shouldn't be concerned with Materials. **/
+        public void setTileMaterial(int x, int y, Material mat){ this.tileGeo[x][y].setMaterial(mat);}
         
         /** Create a list of normally distributed random (or pseudo-random) numbers 
          * with a mean of   1.0   and a   standard deviation   of   0.5. **/

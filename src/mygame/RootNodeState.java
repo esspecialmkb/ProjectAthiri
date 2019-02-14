@@ -37,10 +37,14 @@ import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.binary.BinaryExporter;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
@@ -63,12 +67,17 @@ import com.jme3.texture.Texture2D;
 import com.jme3.texture.image.ColorSpace;
 import com.jme3.texture.image.ImageRaster;
 import com.jme3.util.BufferUtils;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  *  AppState based app harness.
  *
  *  @author    Michael A. Bradford
- *  @version 0.2.0 - MobControl damage/death logic debugging 
+ *  @version 0.2.1 - AppState Integration
+ *  version 0.2.0 - MobControl damage/death logic debugging 
  *  version 0.1.1 - Hit box debugging
  *  version 0.1.0 - Steering Behaviors and AbstractControls.
  *  version 0.0.1 - Combat animation
@@ -77,14 +86,16 @@ import java.util.ArrayList;
 public class RootNodeState extends AbstractAppState {
     // Version Info
     static private int version_maj = 0;
-    static private int version_min = 1;
-    static private int version_revision = 3;
+    static private int version_min = 2;
+    static private int version_revision = 1;
     static String version_fork = "App System Demo";
     
     /** Keep track of the objects vital to the scene graph root. **/
     public AssetManager assetManager;
     public InputManager inputManager;
-    //public Node guiNode;
+    /** Interface for UI. **/
+    protected UIState ui;
+    protected AppStateManager stateManager;
     
     Material[] debugPosMat;
 
@@ -765,6 +776,10 @@ public class RootNodeState extends AbstractAppState {
 
         @Override
         protected void controlUpdate(float tpf) {
+            //CRUDE STATUS CHECK
+            if(statusFlag != 2){
+                
+            //}
             if(damageThisFrame > 0){
                 System.out.println("IM HIT!!! #" + this.id + ", " + damageThisFrame + " damage: " + (health - damageThisFrame));
                 health = health - damageThisFrame;
@@ -831,6 +846,7 @@ public class RootNodeState extends AbstractAppState {
                 }
 
             }
+            }// END STATUSFLAG EXCLUSION
             
         }
 
@@ -1025,6 +1041,9 @@ public class RootNodeState extends AbstractAppState {
     /** Movement update data **/
     private float deltaX = 0.0f;
     private float deltaY = 0.0f;
+    
+    /** The main class needs a way to see this appState's status. **/
+    public int statusFlag = 0;
 
     public Node getRootNode(){
         return rootNode;
@@ -1042,10 +1061,13 @@ public class RootNodeState extends AbstractAppState {
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
+        this.statusFlag = 1;
         this.assetManager = app.getAssetManager();
         this.inputManager = app.getInputManager();
         /** Calculate the tile size according to screen resolution. **/
         tileScreenSize = screenHeight / 16;
+        
+        this.stateManager = stateManager;
         
         /** Setup asset sources. **/
         setupTextures();
@@ -1081,8 +1103,9 @@ public class RootNodeState extends AbstractAppState {
         inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
         inputManager.addMapping("Attack", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping("Menu", new KeyTrigger(KeyInput.KEY_TAB));
         
-        inputManager.addListener(actionListener, "Up","Down","Left","Right","Attack");
+        inputManager.addListener(actionListener, "Up","Down","Left","Right","Attack","Menu");
         
         /** Create Mob Prefab. **/
         setupMobPrefab();
@@ -1106,6 +1129,26 @@ public class RootNodeState extends AbstractAppState {
         }
         
         System.out.println("Init RootNodeState: " + version_maj + "."  + version_min + "." +version_revision+ " - " + version_fork);
+        /** UI STUFF. **/
+        ui = new UIState(tileMatList, screenWidth, screenHeight);
+        stateManager.attach(ui);
+        guiNode.attachChild(ui.healthNode);
+    }
+    
+    public void onPauseMenu(){
+        ui.healthNode.removeFromParent();
+        ui.currScrn = 1;
+        guiNode.attachChild(ui.menuNode);
+        inputManager.addMapping("Select", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addListener(actionListener, "Select");
+    }
+    
+    public void onResumeGame(){
+        ui.menuNode.removeFromParent();
+        ui.currScrn = 0;
+        guiNode.attachChild(ui.healthNode);
+        inputManager.deleteMapping("Select");
+        inputManager.deleteTrigger("Select", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
     }
 
     @Override
@@ -1129,15 +1172,28 @@ public class RootNodeState extends AbstractAppState {
         //deltaY = 0.0f;
         
         //frameTime += tpf;
+        if(statusFlag != 2){
+            /**Player animation and movement code moved to updatePlayer() method. **/
+            playerObj.update(tpf);
+            playerObj.updateWeapon(tpf);
+        }else if(statusFlag == 2){
+            /** This code runs during pause screen. **/
+            
+        }
         
-        /**Player animation and movement code moved to updatePlayer() method. **/
-        playerObj.update(tpf);
-        playerObj.updateWeapon(tpf);
 
         rootNode.updateLogicalState(tpf);
         rootNode.updateGeometricState();
         guiNode.updateLogicalState(tpf);
         guiNode.updateGeometricState();
+    }
+    
+    @Override
+    public void cleanup(){
+        stateManager.detach(ui);
+        
+        /** CLEANUP runs after state is detached - thread safe. **/
+        super.cleanup();
     }
     
     /** This is the same actionListener from the TechDemo. **/
@@ -1175,6 +1231,29 @@ public class RootNodeState extends AbstractAppState {
                 }
             }if(name.equals("Attack")){
                 playerObj.attack = keyPressed;
+            }if(name.equals("Menu")){
+                //statusFlag = -1;
+                statusFlag = -2;
+            if(name.equals("Select") && !keyPressed){
+                    /** Take an action depending on what button is selected. **/
+                    switch(ui.currBtn){
+                        case 1:
+                            //RESUME Game
+                            System.out.println("Start game");
+                            statusFlag = 3;
+                            
+                            break;
+                        case 2:
+                            //Reset the map - new map
+                            System.out.println("Options screen");
+                            break;
+                        case 3:
+                            //QUIT Game - back to main menu
+                            System.out.println("Quit the application");
+                            statusFlag = -1;
+                            break;
+                    }
+                }
             }
         }
     };
@@ -1291,6 +1370,15 @@ public class RootNodeState extends AbstractAppState {
                         ColorRGBA pixel = tileRaster.getPixel(copyX + (tx * imgWidth),copyY + (ty * imgHeight));
                         raster.setPixel(copyX, copyY, pixel);
                     }
+                }
+                
+                String userHome = System.getProperty("user.home");
+                BinaryExporter exporter = BinaryExporter.getInstance();
+                File file = new File(userHome+"/Models/"+"MyModel.j3o");
+                try {
+                  exporter.save(rootNode, file);
+                } catch (IOException ex) {
+                  Logger.getLogger(RootNodeState.class.getName()).log(Level.SEVERE, "Error: Failed to unpack tile texture!", ex);
                 }
                 
                 /** Create new texture from the copied tile... **/

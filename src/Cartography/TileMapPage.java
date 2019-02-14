@@ -11,16 +11,17 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Quad;
 
 /** TileMap prototype.
+ * All private data members made public to use this class as a 'data-container'
  *
  * @author Michael A. Bradford
  */
 public class TileMapPage{
     /** TileMapPage is just a junior TileMap. **/
     /** Data copied from tile maps. **/
-    private int size;           //  Might be more effiecent to make the page reference a global size
-    private int[][] data;       //  This tells the build method which tiles to use
-    private Quad[][] tiles;     //  Meshes used for tiles
-    private Node pageNode;       //  Serves as the 'rootNode' for the tile map
+    public int size;           //  Might be more effiecent to make the page reference a global size
+    public int[][] data;       //  This tells the build method which tiles to use
+    public Quad[][] tiles;     //  Meshes used for tiles
+    public Node pageNode;       //  Serves as the 'rootNode' for the tile map
     public Geometry[][] tileGeo;// Geometries attach the Quads to the scene graph, making them renderable
     
     /** External material references. **/
@@ -34,6 +35,9 @@ public class TileMapPage{
     public int pageY = 0;
     public float offsetX = 0.0f;   //  Track the view offset
     public float offsetY = 0.0f;   // The offsets let us move the tiles relative to the viewport
+    
+    /** SERIALIZATION. **/
+    public TileMapPage(){}
 
     /** Constructor to assemble the tile page. **/
     public TileMapPage(int tileSize, int x, int y){
@@ -128,6 +132,8 @@ public class TileMapPage{
         this.data[x][y] = (mX * 16) + mY;
         this.tileGeo[x][y].setMaterial(i_tileMatList[3][2]);
     }
+    
+    public void setTileMaterial(int x, int y, Material mat){ this.tileGeo[x][y].setMaterial(mat);}
 
     public Node getNode(){
         return this.pageNode;
