@@ -70,7 +70,7 @@ public class WorldAppState extends AbstractAppState {
     public Node getUINode(){return guiNode;}
     
     public void loadTextureAssets(AssetManager assetManager){
-        Texture[] playerTextures = new Texture[20];
+        Texture[] playerTextures = new Texture[24];
         player.playerMat = new Material[6][4];
         
         playerTextures[0] = assetManager.loadTexture("Textures/Player/South/Stand_South.png");
@@ -286,18 +286,7 @@ public class WorldAppState extends AbstractAppState {
         // The TileMapControl handles translating the map and paging tiles, the PlayerControl will handle animations
         worldMap.moveMap(calc.x * tpf * tileScreenSize, calc.y * tpf * tileScreenSize);
         
-        // If up and down are true, animate player either left or right
-        if((playerInputMask[0] == true) && (playerInputMask[1] == true)){
-            if((playerInputMask[2] != playerInputMask[3])){
-            
-            }
-        }
-        // If left and right are true, animate either up or right
-        if((playerInputMask[2] == true) && (playerInputMask[3] == true)){
-            if((playerInputMask[0] != playerInputMask[1])){
-            
-            }
-        }
+        player.setMovementMask(movementFlag);
     }
     
     @Override

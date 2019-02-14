@@ -48,7 +48,7 @@ public class PlayerControl extends AbstractControl {
     private float frameTime = 0;
     private float stepTime = 0.21f;
     private int moveMask = 0,dirMask = 1; // No movement, SouthDir
-    private int frame=0;
+    private int frame=0,animID=0;
     
     public void setTileSize(int newSize){this.tileSize = newSize;}
     public void setMovementMask(int mask){this.moveMask = mask;}
@@ -73,24 +73,237 @@ public class PlayerControl extends AbstractControl {
         pGeo.setLocalTranslation(-(pWidth * tileSize)/2,-(tileSize/4),1);
         createShadow();
     }
+    
+    /** Parse the movement mask and determine best animation to play or continue playing. **/
+    public void updateMoveMask(float tpf){
+        switch (moveMask) {
+        //No movement
+            case 0:
+                updateAnimation(0, tpf);
+                break;
+        //Up
+            case 1:
+                updateAnimation(5, tpf);
+                break;
+        //Down
+            case 2:
+                updateAnimation(4, tpf);
+                break;
+        //Up + Down = OPPOSITE STATE
+            case 3:
+                break;
+        //Left
+            case 4:
+                updateAnimation(7, tpf);
+                break;
+        //Up + Left
+            case 5:
+                break;
+        //Down + Left
+            case 6:
+                break;
+        //Up + Down + Left = BAD STATE
+            case 7:
+                break;
+        //Right
+            case 8:
+                updateAnimation(6, tpf);
+                break;
+        //Up + Right
+            case 9:
+                break;
+        //Down + Right
+            case 10:
+                break;
+        //Up + Down + Right = BAD STATE
+            case 11:
+                break;
+        //Left + Right = OPPOSITE STATE
+            case 12:
+                break;
+        //Up + Left + Right = BAD STATE
+            case 13:
+                break;
+        //Down + Left + Right = BAD STATE
+            case 14:
+                break;
+        //Up + Down + Left + Right = BAD STATE
+            case 15:
+                break;
+            default:
+                break;
+        }
+    }
+    public void updateAnimation(int id, float tpf){
+        if(id == animID){
+            // Continue current Animation
+            // No animations (yet) for standing
+            switch(animID){
+                case 0:
+                    /** Stand south. **/
+                    break;
+                case 1:
+                    /** Stand north. **/
+                    break;
+                case 2:
+                    /** Stand east. **/
+                    break;
+                case 3:
+                    /** Stand west. **/
+                    break;
+                case 4:
+                    /** Run south. **/
+                    if(frameTime < stepTime){
+                        pGeo.setMaterial(playerMat[1][0]);
+                        frameTime += tpf;
+                    }else if(frameTime < (2 * stepTime)){
+                        pGeo.setMaterial(playerMat[2][0]);
+                        frameTime += tpf;
+                    }else if(frameTime < (3 * stepTime)){
+                        pGeo.setMaterial(playerMat[3][0]);
+                        frameTime += tpf;
+                    }else if(frameTime < (4 * stepTime)){
+                        pGeo.setMaterial(playerMat[4][0]);
+                        frameTime += tpf;
+                    }else{
+                        frameTime = 0;
+                    }
+                    break;
+                case 5:
+                    /** Run north. **/
+                    if(frameTime < stepTime){
+                        pGeo.setMaterial(playerMat[1][1]);
+                        frameTime += tpf;
+                    }else if(frameTime < (2 * stepTime)){
+                        pGeo.setMaterial(playerMat[2][1]);
+                        frameTime += tpf;
+                    }else if(frameTime < (3 * stepTime)){
+                        pGeo.setMaterial(playerMat[3][1]);
+                        frameTime += tpf;
+                    }else if(frameTime < (4 * stepTime)){
+                        pGeo.setMaterial(playerMat[4][1]);
+                        frameTime += tpf;
+                    }else{
+                        frameTime = 0;
+                    }
+                    break;
+                case 6:
+                    /** Run east. **/
+                    if(frameTime < stepTime){
+                        pGeo.setMaterial(playerMat[1][2]);
+                        frameTime += tpf;
+                    }else if(frameTime < (2 * stepTime)){
+                        pGeo.setMaterial(playerMat[2][2]);
+                        frameTime += tpf;
+                    }else if(frameTime < (3 * stepTime)){
+                        pGeo.setMaterial(playerMat[3][2]);
+                        frameTime += tpf;
+                    }else if(frameTime < (4 * stepTime)){
+                        pGeo.setMaterial(playerMat[4][2]);
+                        frameTime += tpf;
+                    }else{
+                        frameTime = 0;
+                    }
+                    break;
+                case 7:
+                    /** Run west. **/
+                    if(frameTime < stepTime){
+                        pGeo.setMaterial(playerMat[1][3]);
+                        frameTime += tpf;
+                    }else if(frameTime < (2 * stepTime)){
+                        pGeo.setMaterial(playerMat[2][3]);
+                        frameTime += tpf;
+                    }else if(frameTime < (3 * stepTime)){
+                        pGeo.setMaterial(playerMat[3][3]);
+                        frameTime += tpf;
+                    }else if(frameTime < (4 * stepTime)){
+                        pGeo.setMaterial(playerMat[4][3]);
+                        frameTime += tpf;
+                    }else{
+                        frameTime = 0;
+                    }
+                    break;
+                /** Basic attack frame. **/
+                case 8:
+                    /** Attack south. **/
+                    break;
+                case 9:
+                    /** Attack north. **/
+                    break;
+                case 10:
+                    /** Attack east. **/
+                    break;
+                case 11:
+                    /** Attack west. **/
+                    break;
+                default:
+                    break;
+            }
+        }else{
+            // Start new Animation
+            switch(id){
+                case 0:
+                    /** Stand south. **/
+                    pGeo.setMaterial(playerMat[0][0]);
+                    frameTime = 0;
+                    break;
+                case 1:
+                    /** Stand north. **/
+                    pGeo.setMaterial(playerMat[0][1]);
+                    frameTime = 0;
+                    break;
+                case 2:
+                    /** Stand east. **/
+                    pGeo.setMaterial(playerMat[0][2]);
+                    frameTime = 0;
+                    break;
+                case 3:
+                    /** Stand west. **/
+                    pGeo.setMaterial(playerMat[0][3]);
+                    frameTime = 0;
+                    break;
+                case 4:
+                    /** Run south. **/
+                    pGeo.setMaterial(playerMat[1][0]);
+                    frameTime = 0;
+                    break;
+                case 5:
+                    /** Run north. **/
+                    pGeo.setMaterial(playerMat[1][1]);
+                    frameTime = 0;
+                    break;
+                case 6:
+                    /** Run east. **/
+                    pGeo.setMaterial(playerMat[1][2]);
+                    frameTime = 0;
+                    break;
+                case 7:
+                    /** Run west. **/
+                    pGeo.setMaterial(playerMat[1][3]);
+                    frameTime = 0;
+                    break;
+                case 8:
+                    /** Attack south. **/
+                    break;
+                case 9:
+                    /** Attack north. **/
+                    break;
+                case 10:
+                    /** Attack east. **/
+                    break;
+                case 11:
+                    /** Attack west. **/
+                    break;
+                default:
+                    break;
+            }
+            animID = id;
+        }
+    }
 
     @Override
     protected void controlUpdate(float tpf) {
-        if(frameTime < stepTime){
-            pGeo.setMaterial(playerMat[1][0]);
-            frameTime += tpf;
-        }else if(frameTime < (2 * stepTime)){
-            pGeo.setMaterial(playerMat[2][0]);
-            frameTime += tpf;
-        }else if(frameTime < (3 * stepTime)){
-            pGeo.setMaterial(playerMat[3][0]);
-            frameTime += tpf;
-        }else if(frameTime < (4 * stepTime)){
-            pGeo.setMaterial(playerMat[4][0]);
-            frameTime += tpf;
-        }else{
-            frameTime = 0;
-        }
+        updateMoveMask(tpf);
 
     }
 
