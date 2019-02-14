@@ -5,6 +5,7 @@
  */
 package Utility;
 
+import GameControls.PlayerControl;
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
@@ -18,6 +19,7 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -46,6 +48,7 @@ public class WorldAppState extends AbstractAppState {
     public Node worldNode;
     public Node screenNode;     // Stand-in for guiNode
     public TileMapControl worldMap;
+    public PlayerControl player;
     
     private Node rootNode;
     private Node guiNode = new Node("GUI Node");
@@ -56,7 +59,7 @@ public class WorldAppState extends AbstractAppState {
     private InputManager inputManager;
     private boolean[] playerInputMask;
     private int movementFlag = 0;
-    private float movementX = 0, movementY = 0, movementSpeed = 3;  //Use move speed as 'Tiles per second'
+    private float movementX = 0, movementY = 0, movementSpeed = 2.2f;  //Use move speed as 'Tile per second'
     
     public WorldAppState(int scrnW, int scrnH, int tileDiv){
         screenWidth = scrnW;
@@ -67,8 +70,8 @@ public class WorldAppState extends AbstractAppState {
     public Node getUINode(){return guiNode;}
     
     public void loadTextureAssets(AssetManager assetManager){
-        /*Texture[] playerTextures = new Texture[20];
-        playerMat = new Material[6][4];
+        Texture[] playerTextures = new Texture[20];
+        player.playerMat = new Material[6][4];
         
         playerTextures[0] = assetManager.loadTexture("Textures/Player/South/Stand_South.png");
         playerTextures[1] = assetManager.loadTexture("Textures/Player/South/Run_1_South.png");
@@ -97,38 +100,45 @@ public class WorldAppState extends AbstractAppState {
         int matId = 0;
         int dirId = 0;
         for(int i = 0; i < 4; i++){
-        playerTextures[0 + (i* 5)].setMagFilter(Texture.MagFilter.Nearest);
-        playerTextures[0 + (i* 5)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+            playerTextures[0 + (i* 5)].setMagFilter(Texture.MagFilter.Nearest);
+            playerTextures[0 + (i* 5)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+
+            playerTextures[1 + (i* 5)].setMagFilter(Texture.MagFilter.Nearest);
+            playerTextures[1 + (i* 5)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+
+            playerTextures[2 + (i* 5)].setMagFilter(Texture.MagFilter.Nearest);
+            playerTextures[2 + (i* 5)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+
+            playerTextures[3 + (i* 5)].setMagFilter(Texture.MagFilter.Nearest);
+            playerTextures[3 + (i* 5)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+
+            playerTextures[4 + (i* 5)].setMagFilter(Texture.MagFilter.Nearest);
+            playerTextures[4 + (i* 5)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+
+            player.playerMat[0][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+            player.playerMat[0][i].setTexture("ColorMap", playerTextures[0 + (i* 5)]);
+            player.playerMat[0][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+            player.playerMat[1][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+            player.playerMat[1][i].setTexture("ColorMap", playerTextures[1 + (i* 5)]);
+            player.playerMat[1][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+            player.playerMat[2][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+            player.playerMat[2][i].setTexture("ColorMap", playerTextures[2 + (i* 5)]);
+            player.playerMat[2][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+            player.playerMat[3][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+            player.playerMat[3][i].setTexture("ColorMap", playerTextures[3 + (i* 5)]);
+            player.playerMat[3][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+            player.playerMat[4][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+            player.playerMat[4][i].setTexture("ColorMap", playerTextures[4 + (i* 5)]);
+            player.playerMat[4][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+            matId++;
+        }
         
-        playerTextures[1 + (i* 5)].setMagFilter(Texture.MagFilter.Nearest);
-        playerTextures[1 + (i* 5)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
-        
-        playerTextures[2 + (i* 5)].setMagFilter(Texture.MagFilter.Nearest);
-        playerTextures[2 + (i* 5)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
-        
-        playerTextures[3 + (i* 5)].setMagFilter(Texture.MagFilter.Nearest);
-        playerTextures[3 + (i* 5)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
-        
-        playerTextures[4 + (i* 5)].setMagFilter(Texture.MagFilter.Nearest);
-        playerTextures[4 + (i* 5)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
-        
-        playerMat[0][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
-        playerMat[0][i].setTexture("ColorMap", playerTextures[0 + (i* 5)]);
-        playerMat[0][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
-        playerMat[1][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
-        playerMat[1][i].setTexture("ColorMap", playerTextures[1 + (i* 5)]);
-        playerMat[1][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
-        playerMat[2][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
-        playerMat[2][i].setTexture("ColorMap", playerTextures[2 + (i* 5)]);
-        playerMat[2][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
-        playerMat[3][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
-        playerMat[3][i].setTexture("ColorMap", playerTextures[3 + (i* 5)]);
-        playerMat[3][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
-        playerMat[4][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
-        playerMat[4][i].setTexture("ColorMap", playerTextures[4 + (i* 5)]);
-        playerMat[4][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
-        matId++;
-        }*/
+        player.sMat = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+        Texture sTex = assetManager.loadTexture("Textures/Player/Shadow.png");
+        sTex.setMagFilter(Texture.MagFilter.Nearest);
+        sTex.setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+        player.sMat.setTexture("ColorMap", sTex);
+        player.sMat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
         
         Texture[] terrainTextures = new Texture[15];
         
@@ -209,6 +219,7 @@ public class WorldAppState extends AbstractAppState {
         
         rootNode = new Node("Root Node");        
         worldMap = new TileMapControl();
+        player = new PlayerControl();
         
         /** We need to tell the guiNode to render and to never cull itself. **/
         guiNode.setQueueBucket(RenderQueue.Bucket.Gui);
@@ -216,9 +227,21 @@ public class WorldAppState extends AbstractAppState {
         
         loadTextureAssets(app.getAssetManager());
         
+        player.setTileSize(tileScreenSize);
+        player.createPlayer();
+        
+        /** We need to tell the guiNode to render and to never cull itself. **/
+        player.pNode.setQueueBucket(RenderQueue.Bucket.Gui);
+        player.pNode.setCullHint(Spatial.CullHint.Never);
+        guiNode.attachChild(player.pNode);
+        player.pNode.setLocalTranslation(screenWidth/2,screenHeight/2, 0.5f);
+        player.pNode.addControl(player);
+        
         worldMap.buildMap(tileScreenSize);
         
         guiNode.attachChild(worldMap.getMapNode());
+        worldMap.getMapNode().addControl(worldMap);
+        
         
         /** INPUTS. **/
         /** Setup inputManager. **/
@@ -238,30 +261,43 @@ public class WorldAppState extends AbstractAppState {
     public void update(float tpf) {
         /** Read the player input mask and determine movement direction we're moving in . **/
         movementFlag = 0;
+        movementX = 0;
+        movementY = 0;
         if(playerInputMask[0]){
             movementFlag += 1;
-            
-            movementY += movementSpeed;
+            //UP
+            movementY -= movementSpeed;
         }if(playerInputMask[1]){
             movementFlag += 2;
-            
-            movementY -= movementSpeed;
+            //DOWN
+            movementY += movementSpeed;
         }if(playerInputMask[2]){
             movementFlag += 4;
-            
+            //LEFT
             movementX += movementSpeed;
         }if(playerInputMask[3]){
             movementFlag += 8;
-            
+            //RIGHT
             movementX -= movementSpeed;
         }
         /** Process the movementSpeed before translating the map. **/
-        
+        Vector2f calc = new Vector2f(movementX, movementY).normalize();
+        calc.multLocal(0.1f * movementSpeed);
         // The TileMapControl handles translating the map and paging tiles, the PlayerControl will handle animations
+        worldMap.moveMap(calc.x * tpf * tileScreenSize, calc.y * tpf * tileScreenSize);
         
         // If up and down are true, animate player either left or right
-        
+        if((playerInputMask[0] == true) && (playerInputMask[1] == true)){
+            if((playerInputMask[2] != playerInputMask[3])){
+            
+            }
+        }
         // If left and right are true, animate either up or right
+        if((playerInputMask[2] == true) && (playerInputMask[3] == true)){
+            if((playerInputMask[0] != playerInputMask[1])){
+            
+            }
+        }
     }
     
     @Override
@@ -289,11 +325,11 @@ public class WorldAppState extends AbstractAppState {
             }if(name.equals("Down")){
                 playerInputMask[1] = keyPressed; //Move down
             }if(name.equals("Left")){
-                playerInputMask[0] = keyPressed; //Move left
+                playerInputMask[2] = keyPressed; //Move left
             }if(name.equals("Right")){
-                playerInputMask[0] = keyPressed; //Move right
+                playerInputMask[3] = keyPressed; //Move right
             }if(name.equals("Attack")){
-                playerInputMask[0] = keyPressed; //Move attack
+                playerInputMask[4] = keyPressed; //Move attack
             }
         }
     };

@@ -186,7 +186,7 @@ public class TileMapControl extends AbstractControl {
         delta = 0 - min;
         range += delta;
         range = max - min;
-        System.out.println("Range [" + range + "] = max [" + max + "] - min [" + min + "]");
+        //System.out.println("Range [" + range + "] = max [" + max + "] - min [" + min + "]");
 
         if(maxPages == 0){
             maxPages = 4;
@@ -197,7 +197,7 @@ public class TileMapControl extends AbstractControl {
                         
                 /** Scale the range from raw value to 0-1. **/
                 float value = (float) (((float)noise[pX][pY] + delta)/range);
-                System.out.println("Value: " + value + " x: "+pX + ", y: " + pY);
+                //System.out.println("Value: " + value + " x: "+pX + ", y: " + pY);
                 /** Parse the value according to height ranges. **/
                 if(value < 0.1d){ // Water layer [2,0]
                     //map.setTile(pX,pY,2,0);
@@ -279,13 +279,13 @@ public class TileMapControl extends AbstractControl {
     protected void controlUpdate(float tpf) {
         //TODO: add code that controls TileMap movement,
         //e.g. spatial.rotate(tpf,tpf,tpf);
-        map.mapNode.move(moveX,moveY,0);
+        map.getNode().move(moveX,moveY,0);
         
         // Reset movement to ZERO after moving map 
         mapX += moveX;
         mapY += moveY;
-        moveX = 0;
-        moveY = 0;
+        //moveX = 0;
+        //moveY = 0;
         
         // This control will also need to check if any TileMapPages need to be added or removed
     }
