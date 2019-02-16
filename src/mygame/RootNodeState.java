@@ -729,7 +729,7 @@ public class RootNodeState extends AbstractAppState {
         /** Tell the mob that it was hit. **/
         public void hit(float damage){
             if(!hitDebounce){
-                System.out.println("IM HIT!!! #" + this.id + ", " + damageThisFrame + " damage");
+                //System.out.println("IM HIT!!! #" + this.id + ", " + damageThisFrame + " damage");
                 hitDebounce = true;
                 hitByPlayer = true;
                 hitTimeLeft = hitTime;
@@ -781,13 +781,13 @@ public class RootNodeState extends AbstractAppState {
                 
             //}
             if(damageThisFrame > 0){
-                System.out.println("IM HIT!!! #" + this.id + ", " + damageThisFrame + " damage: " + (health - damageThisFrame));
+                //System.out.println("IM HIT!!! #" + this.id + ", " + damageThisFrame + " damage: " + (health - damageThisFrame));
                 health = health - damageThisFrame;
                 damageThisFrame = 0;
             }
             if(health <= 0.0f){
                 //mob.destroyMob();
-                System.out.println("IM DEAD!!! #" + this.id);
+                //System.out.println("IM DEAD!!! #" + this.id);
                 map.getNode().detachChild(spatial);
                 spatial.removeControl(this);
                 return;
@@ -838,7 +838,7 @@ public class RootNodeState extends AbstractAppState {
                 //Check for removal at the end of the loop
                 if(health < 0.0f){
                     //mob.destroyMob();
-                    System.out.println("IM DEAD!!! #" + this.id);
+                    //System.out.println("IM DEAD!!! #" + this.id);
                     map.getNode().detachChild(spatial);
                     spatial.removeControl(this);
                 }else{
@@ -922,14 +922,14 @@ public class RootNodeState extends AbstractAppState {
                 
                 controlNode = (Node) spatial;
                 Vector3f localTranslation = controlNode.getLocalTranslation();
-                System.out.println("setSpatial @: " + localTranslation);
+                //System.out.println("setSpatial @: " + localTranslation);
                 mobPosScreen.set(localTranslation.x,localTranslation.y);
             }else if (spatial != null && mob != null){
                 // initialize and create Mob
                 this.spatial = spatial;
                 controlNode = mob.getNode();
                 Vector3f localTranslation = controlNode.getLocalTranslation();
-                System.out.println("setSpatial @: " + localTranslation);
+                //System.out.println("setSpatial @: " + localTranslation);
                 mobPosScreen.set(localTranslation.x,localTranslation.y);
             }else{
                 // cleanup
@@ -993,7 +993,7 @@ public class RootNodeState extends AbstractAppState {
                         activeMobControls.remove(this);
                     }
                     if(damageThisFrame > 0){
-                        System.out.println("IM HIT!!! #" + this.id);
+                        //System.out.println("IM HIT!!! #" + this.id);
                         mob.health -= damageThisFrame;
                         health -= damageThisFrame;
                         damageThisFrame = 0;
@@ -1001,12 +1001,12 @@ public class RootNodeState extends AbstractAppState {
                     //Check for removal at the end of the loop
                     if(mob.health < 0){
                         //mob.destroyMob();
-                        System.out.println("IM DEAD!!! #" + this.id);
+                        //System.out.println("IM DEAD!!! #" + this.id);
                         guiNode.detachChild(spatial);
                         mob.getNode().detachAllChildren();
                         mob.getNode().removeControl(this);
                     }else{
-                        System.out.println("Mob #" + id + " Health :" + mob.health + " , alt: " + health);
+                        //System.out.println("Mob #" + id + " Health :" + mob.health + " , alt: " + health);
                     }
                 }
                 
@@ -1112,7 +1112,7 @@ public class RootNodeState extends AbstractAppState {
         
         
         // Let's play around with random numbers with normalized distrobution
-        System.out.println("Spawn mobs");
+        //System.out.println("Spawn mobs");
         mobControls = new ArrayList<>();
         for(int t = 0; t < 20; t++){
             double mobX = map.randNormDist(32d, 15d);
@@ -1128,7 +1128,7 @@ public class RootNodeState extends AbstractAppState {
             map.getNode().attachChild(newMob.getNode());
         }
         
-        System.out.println("Init RootNodeState: " + version_maj + "."  + version_min + "." +version_revision+ " - " + version_fork);
+        //System.out.println("Init RootNodeState: " + version_maj + "."  + version_min + "." +version_revision+ " - " + version_fork);
         /** UI STUFF. **/
         ui = new UIState(tileMatList, screenWidth, screenHeight);
         stateManager.attach(ui);
@@ -1239,17 +1239,17 @@ public class RootNodeState extends AbstractAppState {
                     switch(ui.currBtn){
                         case 1:
                             //RESUME Game
-                            System.out.println("Start game");
+                            //System.out.println("Start game");
                             statusFlag = 3;
                             
                             break;
                         case 2:
                             //Reset the map - new map
-                            System.out.println("Options screen");
+                            //System.out.println("Options screen");
                             break;
                         case 3:
                             //QUIT Game - back to main menu
-                            System.out.println("Quit the application");
+                            //System.out.println("Quit the application");
                             statusFlag = -1;
                             break;
                     }

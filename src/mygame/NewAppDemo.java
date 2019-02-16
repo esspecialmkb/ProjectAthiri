@@ -294,7 +294,7 @@ public class NewAppDemo extends BasicApplication {
         @Override
         public void cleanup(){
             inputManager.deleteMapping("Select");
-            inputManager.deleteTrigger("Select", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+            //inputManager.deleteTrigger("Select", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
             
             super.cleanup();
         }

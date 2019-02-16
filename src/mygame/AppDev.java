@@ -30,10 +30,10 @@ import com.jme3.texture.Texture;
  */
 public class AppDev extends BasicApplication{
     // Version Info
-    static private int version_maj = 2;
-    static private int version_min = 0;
+    static private int version_maj = 1;
+    static private int version_min = 1;
     static private int version_revision = 1;
-    static String version_fork = "App Dev";
+    static String version_fork = "App Development";
     
     public Texture[] loadTextures;
     
@@ -50,7 +50,7 @@ public class AppDev extends BasicApplication{
         //settings.setResolution(1024, 768);
         settings.setFrameRate(60);
         settings.setSettingsDialogImage("Interface/iconEA.png");
-        settings.setTitle("Project Athiri (Debug)- v." + version_maj + "."  + version_min + "." +version_revision+ " - " + version_fork);
+        settings.setTitle("Project Athiri (Dev)- v." + version_maj + "."  + version_min + "." +version_revision+ " - " + version_fork);
         app.setSettings(settings);
         app.start();
     }

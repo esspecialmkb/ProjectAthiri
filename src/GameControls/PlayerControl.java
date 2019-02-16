@@ -79,7 +79,7 @@ public class PlayerControl extends AbstractControl {
         switch (moveMask) {
         //No movement
             case 0:
-                updateAnimation(0, tpf);
+                updateAnimation(dirMask, tpf);
                 break;
         //Up
             case 1:
@@ -245,41 +245,49 @@ public class PlayerControl extends AbstractControl {
                 case 0:
                     /** Stand south. **/
                     pGeo.setMaterial(playerMat[0][0]);
+                    dirMask = 0;
                     frameTime = 0;
                     break;
                 case 1:
                     /** Stand north. **/
                     pGeo.setMaterial(playerMat[0][1]);
+                    dirMask = 1;
                     frameTime = 0;
                     break;
                 case 2:
                     /** Stand east. **/
                     pGeo.setMaterial(playerMat[0][2]);
+                    dirMask = 2;
                     frameTime = 0;
                     break;
                 case 3:
                     /** Stand west. **/
                     pGeo.setMaterial(playerMat[0][3]);
+                    dirMask = 3;
                     frameTime = 0;
                     break;
                 case 4:
                     /** Run south. **/
                     pGeo.setMaterial(playerMat[1][0]);
+                    dirMask = 0;
                     frameTime = 0;
                     break;
                 case 5:
                     /** Run north. **/
                     pGeo.setMaterial(playerMat[1][1]);
+                    dirMask = 1;
                     frameTime = 0;
                     break;
                 case 6:
                     /** Run east. **/
                     pGeo.setMaterial(playerMat[1][2]);
+                    dirMask = 2;
                     frameTime = 0;
                     break;
                 case 7:
                     /** Run west. **/
                     pGeo.setMaterial(playerMat[1][3]);
+                    dirMask = 3;
                     frameTime = 0;
                     break;
                 case 8:
