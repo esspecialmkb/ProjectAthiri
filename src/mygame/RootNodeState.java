@@ -156,8 +156,8 @@ public class RootNodeState extends AbstractAppState {
         
         private Geometry attackBoxLow;
         private Geometry attackBoxHigh;
-        private Node attackBoxLowNode;
-        private Node attackBoxHighNode;
+        /*private Node attackBoxLowNode;
+        private Node attackBoxHighNode;*/
         
         /** Weapon scene-stuff. **/
         private Geometry weaponGeo;
@@ -246,15 +246,15 @@ public class RootNodeState extends AbstractAppState {
             playerNode.setLocalTranslation(clone);
             
             /** Data members for the debug position marker for mobs. **/
-            Quad quad = new Quad((1) * tileScreenSize, (1) * tileScreenSize);
+            /*Quad quad = new Quad((1) * tileScreenSize, (1) * tileScreenSize);
             Geometry geo = new Geometry("Player Pos Marker", quad);
-
-            /** Set the proper Material to the Geometry and attach to Node. **/
-            geo.setMaterial(debugPosMat[1]);
-            playerNode.attachChild(geo);
-            geo.setLocalTranslation(-0.5f * tileScreenSize,-0.5f *tileScreenSize,0.5f);
             
-            attackBoxLow = new Geometry("Attk Box L", quad);
+            /** Set the proper Material to the Geometry and attach to Node. **/
+            /*geo.setMaterial(debugPosMat[1]);
+            playerNode.attachChild(geo);
+            geo.setLocalTranslation(-0.5f * tileScreenSize,-0.5f *tileScreenSize,0.5f);*/
+            
+            /*attackBoxLow = new Geometry("Attk Box L", quad);
             attackBoxHigh = new Geometry("Attk Box H", quad);
             
             attackBoxLowNode = new Node("Weapon Pivot L");
@@ -271,7 +271,7 @@ public class RootNodeState extends AbstractAppState {
             playerNode.attachChild(attackBoxLowNode);
             attackBoxLowNode.setLocalTranslation(-2f * tileScreenSize,-2f *tileScreenSize,0.5f);
             playerNode.attachChild(attackBoxHighNode);
-            attackBoxHighNode.setLocalTranslation(2f * tileScreenSize,0f *tileScreenSize,0.5f);
+            attackBoxHighNode.setLocalTranslation(2f * tileScreenSize,0f *tileScreenSize,0.5f);*/
         }
         
         /** Update player frame animation and movement. **/
@@ -558,8 +558,7 @@ public class RootNodeState extends AbstractAppState {
                     hitBoxL.set((-2 * tileScreenSize),(-2 * tileScreenSize),0.5f);
                     //System.out.println("PlayerPos" + playerPosScreen + ", Position of player hitbox" + hitBoxL);
                     hitBoxH.set(hitBoxL.add(new Vector3f((4 * tileScreenSize),(2 * tileScreenSize),0)));
-                    attackBoxLowNode.setLocalTranslation(hitBoxL);
-                    attackBoxHighNode.setLocalTranslation(hitBoxH);
+                    //attackBoxLowNode.setLocalTranslation(hitBoxL)
                     testWeapon(hitBoxL.x,hitBoxL.y,(4 * tileScreenSize),(2 * tileScreenSize));
                 }
                 //up
@@ -571,8 +570,8 @@ public class RootNodeState extends AbstractAppState {
                     
                     hitBoxL.set((-2f * tileScreenSize),(2.5f * tileScreenSize),0.5f);
                     hitBoxH.set(hitBoxL.add(new Vector3f((4 * tileScreenSize),(2 * tileScreenSize),0)));
-                    attackBoxLowNode.setLocalTranslation(hitBoxL);
-                    attackBoxHighNode.setLocalTranslation(hitBoxH);
+                    /*attackBoxLowNode.setLocalTranslation(hitBoxL);
+                    attackBoxHighNode.setLocalTranslation(hitBoxH);*/
                     testWeapon(hitBoxL.x,hitBoxL.y,(4f * tileScreenSize),(2f * tileScreenSize));
                 }
                 //left
@@ -584,8 +583,8 @@ public class RootNodeState extends AbstractAppState {
                     
                     hitBoxL.set((-2.3f * tileScreenSize),(0f * tileScreenSize),0.5f);
                     hitBoxH.set(hitBoxL.add(new Vector3f((2 * tileScreenSize),(4 * tileScreenSize),0)));
-                    attackBoxLowNode.setLocalTranslation(hitBoxL);
-                    attackBoxHighNode.setLocalTranslation(hitBoxH);
+                    /*attackBoxLowNode.setLocalTranslation(hitBoxL);
+                    attackBoxHighNode.setLocalTranslation(hitBoxH);*/
                     testWeapon(hitBoxL.x,hitBoxL.y,(2f * tileScreenSize),(4f * tileScreenSize));
                 }
                 //right
@@ -597,8 +596,8 @@ public class RootNodeState extends AbstractAppState {
                     
                     hitBoxL.set((0.3f * tileScreenSize),(0f * tileScreenSize),0.5f);
                     hitBoxH.set(hitBoxL.add(new Vector3f((2 * tileScreenSize),(4 * tileScreenSize),0)));
-                    attackBoxLowNode.setLocalTranslation(hitBoxL);
-                    attackBoxHighNode.setLocalTranslation(hitBoxH);
+                    /*attackBoxLowNode.setLocalTranslation(hitBoxL);
+                    attackBoxHighNode.setLocalTranslation(hitBoxH);*/
                     testWeapon(hitBoxL.x,hitBoxL.y,(2f * tileScreenSize),(4f * tileScreenSize));
                 }
                 
@@ -760,13 +759,13 @@ public class RootNodeState extends AbstractAppState {
             //mobNode.addControl(this);
             
             /** Data members for the debug position marker for mobs. **/
-            Quad quad = new Quad((1) * tileScreenSize, (1) * tileScreenSize);
-            Geometry geo = new Geometry("Mob Position Marker", quad);
+            /*Quad quad = new Quad((1) * tileScreenSize, (1) * tileScreenSize);
+            Geometry geo = new Geometry("Mob Position Marker", quad);*/
 
             /** Set the proper Material to the Geometry and attach to Node. **/
-            geo.setMaterial(debugPosMat[0]);
+            /*geo.setMaterial(debugPosMat[0]);
             mobNode.attachChild(geo);
-            geo.setLocalTranslation(-0.5f * tileScreenSize,-0.5f * tileScreenSize,0.5f);
+            geo.setLocalTranslation(-0.5f * tileScreenSize,-0.5f * tileScreenSize,0.5f);*/
         }
         
         public void destroyMob(){
