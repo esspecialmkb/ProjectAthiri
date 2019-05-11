@@ -32,7 +32,7 @@ public class AppDev extends BasicApplication{
     // Version Info
     static private int version_maj = 1;
     static private int version_min = 1;
-    static private int version_revision = 1;
+    static private int version_revision = 3;
     static String version_fork = "App Development";
     
     public Texture[] loadTextures;
@@ -59,7 +59,7 @@ public class AppDev extends BasicApplication{
     public void simpleInitApp() {
         flyCam.setEnabled(false);
         
-        loadTextureAssets();
+        //loadTextureAssets();
         
         
                 /** Write text on the screen (HUD) */

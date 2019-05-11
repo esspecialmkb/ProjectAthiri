@@ -12,6 +12,8 @@ import com.jme3.app.state.AppStateManager;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.asset.AssetManager;
 import com.jme3.export.binary.BinaryExporter;
+import com.jme3.font.BitmapFont;
+import com.jme3.font.BitmapText;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
@@ -19,10 +21,13 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
@@ -36,7 +41,7 @@ import java.util.logging.Logger;
 import mygame.RootNodeState;
 
 /**
- *  
+ *  @Line 177 - TileMapControl arch tiles
  *  
  *
  * @author esspe 
@@ -52,6 +57,8 @@ public class WorldAppState extends AbstractAppState {
     
     private Node rootNode;
     private Node guiNode = new Node("GUI Node");
+    private BitmapFont gameFont;
+    private BitmapText[] debugText;
     
     private Material[] terrainMat;
     private Material[] archMat;
@@ -59,7 +66,7 @@ public class WorldAppState extends AbstractAppState {
     private InputManager inputManager;
     private boolean[] playerInputMask;
     private int movementFlag = 0;
-    private float movementX = 0, movementY = 0, movementSpeed = 2.2f;  //Use move speed as 'Tile per second'
+    private float movementX = 0, movementY = 0, movementSpeed = 0.5f;  //Use move speed as 'Tile per second'
     
     public WorldAppState(int scrnW, int scrnH, int tileDiv){
         screenWidth = scrnW;
@@ -97,6 +104,11 @@ public class WorldAppState extends AbstractAppState {
         playerTextures[18] = assetManager.loadTexture("Textures/Player/West/Run_3_West.png");
         playerTextures[19] = assetManager.loadTexture("Textures/Player/West/Run_4_West.png");
         
+        playerTextures[20] = assetManager.loadTexture("Textures/Player/South/Attack_South.png");
+        playerTextures[21] = assetManager.loadTexture("Textures/Player/North/Attack_North.png");
+        playerTextures[22] = assetManager.loadTexture("Textures/Player/East/Attack_East.png");
+        playerTextures[23] = assetManager.loadTexture("Textures/Player/West/Attack_West.png");
+        
         int matId = 0;
         int dirId = 0;
         for(int i = 0; i < 4; i++){
@@ -114,6 +126,10 @@ public class WorldAppState extends AbstractAppState {
 
             playerTextures[4 + (i* 5)].setMagFilter(Texture.MagFilter.Nearest);
             playerTextures[4 + (i* 5)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+            
+            //Attack frames
+            playerTextures[20 + i].setMagFilter(Texture.MagFilter.Nearest);
+            playerTextures[20 + i].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
 
             player.playerMat[0][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
             player.playerMat[0][i].setTexture("ColorMap", playerTextures[0 + (i* 5)]);
@@ -130,6 +146,32 @@ public class WorldAppState extends AbstractAppState {
             player.playerMat[4][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
             player.playerMat[4][i].setTexture("ColorMap", playerTextures[4 + (i* 5)]);
             player.playerMat[4][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+            
+            //Attack frames
+            player.playerMat[5][i] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+            player.playerMat[5][i].setTexture("ColorMap", playerTextures[20 + i]);
+            player.playerMat[5][i].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+            matId++;
+        }
+        
+        Texture[] combatTextures = new Texture[6];
+        player.cMat = new Material[6];
+        
+        combatTextures[0] = assetManager.loadTexture("Textures/Combat/AttackSlash_0.png");
+        combatTextures[1] = assetManager.loadTexture("Textures/Combat/AttackSlash_1.png");
+        combatTextures[2] = assetManager.loadTexture("Textures/Combat/AttackSlash_2.png");
+        combatTextures[3] = assetManager.loadTexture("Textures/Combat/AttackSlash_3.png");
+        combatTextures[4] = assetManager.loadTexture("Textures/Combat/AttackSlash_4.png");
+        combatTextures[5] = assetManager.loadTexture("Textures/Combat/AttackSlash_5.png");
+        
+        matId = 0;
+        for(Texture tList : combatTextures){
+            tList.setMagFilter(Texture.MagFilter.Nearest);
+            tList.setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+            
+            player.cMat[matId] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+            player.cMat[matId].setTexture("ColorMap", tList);
+            player.cMat[matId].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
             matId++;
         }
         
@@ -171,37 +213,63 @@ public class WorldAppState extends AbstractAppState {
         
         /** Texture for Architecture. **/
         Texture archText = assetManager.loadTexture("Textures/Tiles/Architecture/Arch_1.png");
-        ImageRaster tileRaster = ImageRaster.create(archText.getImage());
-        worldMap.archMat = new Material[256];
-        Texture2D[] tempText = new Texture2D[256];
         
-        int imgWidth = 16, imgHeight = 16, depth = 4;
+        /** New textures. **/
+        Texture[] wallTexture = new Texture[21];
         
-        for(int mX = 0; mX < 16; mX++){
-            for(int mY = 0; mY < 16; mY++){
-                //tempText[mX + (mY * 16)] = new Texture2D();
-                Image img = new Image(Image.Format.BGRA8, imgWidth, imgHeight, BufferUtils.createByteBuffer(depth * imgWidth * imgHeight), null, ColorSpace.sRGB); 
-                
-                ImageRaster raster = ImageRaster.create(img);
-                
-                /** Copy pixels from source, paste to destination. **/
-                for(int copyX = 0; copyX < 16; copyX++){
-                    for(int copyY = 0; copyY < 16; copyY++){
-                        ColorRGBA pixel = tileRaster.getPixel(copyX + (mX * imgWidth),copyY + (mY * imgHeight));
-                        raster.setPixel(copyX, copyY, pixel);
-                    }
-                }
-                /** Create new texture from the copied tile... **/
-                tempText[mX + (mY * 16)] = new Texture2D(img);
-                // Set these filters for pixellated look
-                tempText[mX + (mY * 16)].setMagFilter(Texture.MagFilter.Nearest);
-                tempText[mX + (mY * 16)].setMinFilter(Texture.MinFilter.NearestNoMipMaps);
-                
-                worldMap.archMat[mX + (mY * 16)] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
-                worldMap.archMat[mX + (mY * 16)].setTexture("ColorMap", tempText[mX + (mY * 16)]);
-                worldMap.archMat[mX + (mY * 16)].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
-            }
+        wallTexture[0] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Bottom_Cap.png");
+        wallTexture[1] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Cap.png");
+        wallTexture[2] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Center.png");
+        wallTexture[3] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Center_Top.png");
+        wallTexture[4] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Horiz_Row.png");
+        wallTexture[5] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Left_Cap.png");
+        wallTexture[6] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Left_DnCorner.png");
+        wallTexture[7] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Left_Mid.png");
+        wallTexture[8] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Left_Turn_Bottom.png");
+        wallTexture[9] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Left_Turn_Top.png");
+        
+        wallTexture[10] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Left_UpCorner.png");
+        wallTexture[11] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Mid_Bottom.png");
+        wallTexture[12] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Right_Cap.png");
+        wallTexture[13] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Right_DnCorner.png");
+        wallTexture[14] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Right_Mid.png");
+        wallTexture[15] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Right_Turn_Bottom.png");
+        wallTexture[16] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Right_Turn_Top.png");
+        wallTexture[17] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Right_UpCorner.png");
+        wallTexture[18] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Top_Cap.png");
+        wallTexture[19] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Vert_Col.png");
+        
+        wallTexture[20] = assetManager.loadTexture("Textures/Tiles/Architecture/Walls/Wall_Blank.png");
+        
+        worldMap.archMat = new Material[21];
+        for(int m = 0; m < 21; m++){
+            worldMap.archMat[m] = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+            worldMap.archMat[m].setTexture("ColorMap", wallTexture[m]);
+            worldMap.archMat[m].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
         }
+        
+        Texture debugText = assetManager.loadTexture("Textures/Tiles/Debug_Red.png");
+        worldMap.debugMat = new Material[4];
+        //worldMap.debugPageGeo = new Geometry[9];
+        worldMap.debugMat[0]  = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+        worldMap.debugMat[0].setTexture("ColorMap", debugText);
+        worldMap.debugMat[0].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+        worldMap.debugGeo = new Geometry("Debug Red",new Quad(tileScreenSize,tileScreenSize));
+        
+        worldMap.debugMat[1]  = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+        worldMap.debugMat[1].setTexture("ColorMap", assetManager.loadTexture("Textures/Tiles/PageDebug_Red.png"));
+        worldMap.debugMat[1].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+        //worldMap.debugGeo = new Geometry("Debug Red",new Quad(tileScreenSize * 16,tileScreenSize * 16));
+        
+        worldMap.debugMat[2]  = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+        worldMap.debugMat[2].setTexture("ColorMap", assetManager.loadTexture("Textures/Tiles/PageDebug_Blue.png"));
+        worldMap.debugMat[2].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+        //worldMap.debugGeo = new Geometry("Debug Red",new Quad(tileScreenSize * 16,tileScreenSize * 16));
+        
+        worldMap.debugMat[3]  = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+        worldMap.debugMat[3].setTexture("ColorMap", assetManager.loadTexture("Textures/Tiles/PageDebug_Yellow.png"));
+        worldMap.debugMat[3].getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+        //worldMap.debugGeo = new Geometry("Debug Red",new Quad(tileScreenSize * 16,tileScreenSize * 16));
     }
     
     @Override
@@ -235,13 +303,19 @@ public class WorldAppState extends AbstractAppState {
         player.pNode.setCullHint(Spatial.CullHint.Never);
         guiNode.attachChild(player.pNode);
         player.pNode.setLocalTranslation(screenWidth/2,screenHeight/2, 0.5f);
+        worldMap.playerX = (screenWidth/2);
+        worldMap.playerY = (screenHeight/2);
+        
         player.pNode.addControl(player);
         
-        worldMap.buildMap(tileScreenSize);
+        //worldMap.buildMap(tileScreenSize);
+        worldMap.buildPagedMap(tileScreenSize);
         
         guiNode.attachChild(worldMap.getMapNode());
         worldMap.getMapNode().addControl(worldMap);
         
+        gameFont = app.getAssetManager().loadFont("Interface/Fonts/Default.fnt");
+        setupDebugText();
         
         /** INPUTS. **/
         /** Setup inputManager. **/
@@ -255,6 +329,33 @@ public class WorldAppState extends AbstractAppState {
         inputManager.addMapping("Menu", new KeyTrigger(KeyInput.KEY_TAB));
         
         inputManager.addListener(actionListener, "Up","Down","Left","Right","Attack","Menu");
+    }
+    
+    public void setupDebugText(){
+        debugText = new BitmapText[4];
+        debugText[0] = new BitmapText(gameFont, false);
+        debugText[0].setSize(gameFont.getCharSet().getRenderedSize());
+        debugText[0].setText("Map Position: ");
+        debugText[0].setLocalTranslation(5, screenHeight - debugText[0].getLineHeight(), 0);
+        guiNode.attachChild(debugText[0]);
+        
+        debugText[1] = new BitmapText(gameFont, false);
+        debugText[1].setSize(gameFont.getCharSet().getRenderedSize());
+        debugText[1].setText("Page Position: ");
+        debugText[1].setLocalTranslation(5, screenHeight - (2 * (debugText[1].getLineHeight() + 5)), 0);
+        guiNode.attachChild(debugText[1]);
+        
+        debugText[2] = new BitmapText(gameFont, false);
+        debugText[2].setSize(gameFont.getCharSet().getRenderedSize());
+        debugText[2].setText("Page Index: ");
+        debugText[2].setLocalTranslation(5, screenHeight - (3 * (debugText[2].getLineHeight() + 5)), 0);
+        guiNode.attachChild(debugText[2]);
+        
+        debugText[3] = new BitmapText(gameFont, false);
+        debugText[3].setSize(gameFont.getCharSet().getRenderedSize());
+        debugText[3].setText("Time per frame: FPS: ");
+        debugText[3].setLocalTranslation(5, screenHeight - (4 * (debugText[3].getLineHeight() + 5)), 0);
+        guiNode.attachChild(debugText[3]);
     }
     
     @Override
@@ -279,14 +380,32 @@ public class WorldAppState extends AbstractAppState {
             movementFlag += 8;
             //RIGHT
             movementX -= movementSpeed;
+        }if(playerInputMask[4] == true){
+            player.setActionMask(1);
+            movementX = 0;
+            movementY = 0;
+        }else if(playerInputMask[4] == false){
+            /** Process the movementSpeed before translating the map. **/
+            Vector2f calc = new Vector2f(movementX, movementY).normalize();
+            calc.multLocal(1f * movementSpeed);
+            
+            // The TileMapControl handles translating the map and paging tiles, the PlayerControl will handle animations
+            worldMap.moveMap(calc.x * 1, calc.y * 1);
+            player.setMovementMask(movementFlag);
         }
-        /** Process the movementSpeed before translating the map. **/
-        Vector2f calc = new Vector2f(movementX, movementY).normalize();
-        calc.multLocal(0.1f * movementSpeed);
-        // The TileMapControl handles translating the map and paging tiles, the PlayerControl will handle animations
-        worldMap.moveMap(calc.x * tpf * tileScreenSize, calc.y * tpf * tileScreenSize);
         
-        player.setMovementMask(movementFlag);
+        updateDebugText(tpf);
+    }
+    
+    public void updateDebugText(float tpf){
+        Vector2f mapCoords = worldMap.getMapCoords();
+        debugText[0].setText("Map Position: " + mapCoords.x + ", " + mapCoords.y);
+        
+        debugText[1].setText("Page Position: " + mapCoords.x % 16 + ", " + mapCoords.y % 16);
+        
+        debugText[2].setText("Page Index: " + -FastMath.floor(mapCoords.x / 16 )+ ", " + -FastMath.floor(mapCoords.y / 16));
+        
+        debugText[3].setText(" FPS: " + Math.floor((1/tpf)) + "Time per frame: " + tpf);
     }
     
     @Override

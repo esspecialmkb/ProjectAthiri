@@ -21,10 +21,14 @@ import java.util.Random;
 public class TileMap{
         /** Data for Tile pages are being refactored. **/
         public int size;           //  Keep track of tile size (on screen)
+        /** data == 0 -> walkable, == 1 -> Blocking. **/
         public int[][] data;       //  This tells the build method which tiles to use
         public Quad[][] tiles;     //  Meshes used for tiles
         public Node mapNode;       //  Serves as the 'rootNode' for the tile map
         public Geometry[][] tileGeo;// Geometries attach the Quads to the scene graph, making them renderable
+        /** Adding a second tile layer for architecture tiles. **/
+        public Geometry[][] archGeo;
+        public boolean isPaged;
         
         /** External material references. **/
         public Material[][] i_tileMatList;
@@ -32,12 +36,13 @@ public class TileMap{
         /** We're going to use a single chunk of tiles for now, but let's track position... **/
         public int pageX = 0;
         public int pageY = 0;
-        public float offsetX = 0.0f;   // Track the view offset
-        public float offsetY = 0.0f;   // The offsets let us move the tiles relative to the viewport
+        public float offsetX = 0.0f, playerX = 0.0f, playerOffsetX;   // Track the view offset
+        public float offsetY = 0.0f, playerY = 0.0f, playerOffsetY;   // The offsets let us move the tiles relative to the viewport
         
         /** NEW DATA MEMBERS FOR TILEPAGES. **/
         public ArrayList<TileMapPage> pages;
         public int maxPages;
+        public int pageSize;
         
         /** SERIALIZATION - MANUAL SETUP. **/
         public TileMap(){}
@@ -119,6 +124,64 @@ public class TileMap{
                     // New pages still need to be added to the scene graph
                     this.mapNode.attachChild(newPage.getNode());
                 }
+            }
+        }
+        
+        public boolean checkRange(int x, int y){
+            int index = (x * maxPages) + y;
+            return (index > 0 && index < (maxPages * maxPages));
+        }
+        public int getPageIndex(int x, int y){ return (x * maxPages) + y;}
+        
+        public void checkPages(int x, int y, Material[] matsel){
+            
+            int px = x / (pageSize);
+            int py = y / (pageSize);
+            int index = (px * maxPages) + py;
+            //System.out.println("checkPages: " + x + ", " +  y + ". Page: " + px + ", " +  py + ", index: " +  index);
+            
+            
+            
+            if(checkRange(px,py) == true){
+                /** This is the page that the player is standing on. **/
+                //System.out.println("Center page: " + index + ", calc: " + getPageIndex(px,py));
+                //addPage(index);
+                //pages.get(getPageIndex(px,py)).setState(1);
+            }
+            
+            int countActive = 0;
+            int countInactive = 0;
+            for(int p = 0; p < pages.size();p++){
+                int dx = px - pages.get(p).pageX;
+                int dy = py - pages.get(p).pageY;
+                if(pages.get(p).state == 0){
+                    countInactive++;
+                    if(Math.abs(dx) < 2 || Math.abs(dy) < 2){
+                        addPage(p);
+                    }
+                }if(pages.get(p).state == 1){
+                    countActive++;
+                    if(Math.abs(dx) > 3 || Math.abs(dy) > 3){
+                        removePage(p);
+                    }
+                }
+            }
+            //System.out.println("Done checkPages: " + countActive + " active. " + countInactive + " inactive.");
+            pageX = px;
+            pageY = py;
+        }
+        
+        public void removePage(int index){
+            if(pages.get(index).getState() != 0){
+                mapNode.detachChild(pages.get(index).pageNode);
+                pages.get(index).setState(0);
+            }
+        }
+        
+        public void addPage(int index){
+            if(pages.get(index).getState() == 0){
+                mapNode.attachChild(pages.get(index).pageNode);
+                pages.get(index).setState(1);
             }
         }
         
@@ -231,9 +294,83 @@ public class TileMap{
                 System.out.println("origin point: "+ x + ","+y + "| page:"+ pX + "," + pY + "| index:" + dX + "," + dY);
             }
         }
+        public int getTileData(int x, int y){
+            if(isPaged){
+                int px = x / pageSize;
+                int tx = x % pageSize;
+                int py = y / pageSize;
+                int ty = y % pageSize;
+                if(px > -1 && px < maxPages * pageSize){
+                    if(py > -1 && py < maxPages * pageSize){
+                        if(tx > -1 && tx < 16 && ty > -1 && ty < 16){
+                           return this.pages.get((px * maxPages) + py).data[tx][ty]; 
+                        }
+                    }
+                }
+                return -1;
+            }else{
+                return this.data[x][y];
+            }
+        }
         
         /** TileMap shouldn't be concerned with Materials. **/
-        public void setTileMaterial(int x, int y, Material mat){ this.tileGeo[x][y].setMaterial(mat);}
+        public void setTileMaterial(int x, int y, Material mat){ 
+            if(isPaged){
+                int px = x / pageSize;
+                int tx = x % pageSize;
+                int py = y / pageSize;
+                int ty = y % pageSize;
+                
+                int index = (px * maxPages) + py;
+                //System.out.println("x:" + x + ", y:" + y + ", px:" + px + ", py:" + py + ", tx:" + tx + ", ty:" + ty + ", (px * pageSize) + py) = " + index);
+                this.pages.get((px * maxPages) + py).tileGeo[tx][ty].setMaterial(mat);
+            }else{
+                this.tileGeo[x][y].setMaterial(mat);
+            }
+        }
+        public void setArchTileMaterial(int x, int y, Material mat){ 
+            /** We're going to refactor this to add geometry instead of using blank/clear texture. **/
+            if(isPaged){
+                int px = x / pageSize;
+                int tx = x % pageSize;
+                int py = y / pageSize;
+                int ty = y % pageSize;
+                
+                int index = (px * maxPages) + py;
+                //System.out.println("x:" + x + ", y:" + y + ", px:" + px + ", py:" + py + ", tx:" + tx + ", ty:" + ty + ", (px * pageSize) + py) = " + index);
+                this.pages.get((px * maxPages) + py).archGeo[tx][ty].setMaterial(mat);
+                
+                //this.pages.get((px * maxPages) + py).getNode();
+            }else{
+                this.tileGeo[x][y].setMaterial(mat);
+            }
+        }
+        public void setTileData(int x, int y, int data){
+            if(isPaged){
+                int px = x / pageSize;
+                int tx = x % pageSize;
+                int py = y / pageSize;
+                int ty = y % pageSize;
+                
+                this.pages.get((px * maxPages) + py).data[tx][ty] = data;
+            }else{
+                this.data[x][y] = data;
+            }
+        }
+        public void addArchTile(int x, int y, Geometry newTile, Material mat){
+            // Take the prefab geometry and add to the correct tile page
+            newTile.setMaterial(mat);
+            if(isPaged){
+                int px = x / pageSize;
+                int tx = x % pageSize;
+                int py = y / pageSize;
+                int ty = y % pageSize;
+                
+                this.pages.get((px * maxPages) + py).getNode().attachChild(newTile);
+            }else{
+                this.mapNode.attachChild(newTile);
+            }
+        }
         
         /** Create a list of normally distributed random (or pseudo-random) numbers 
          * with a mean of   1.0   and a   standard deviation   of   0.5. **/
@@ -253,4 +390,5 @@ public class TileMap{
         }
         
         public Node getNode(){return this.mapNode;}
+
     } // END OF CLASS PROTOTYPE

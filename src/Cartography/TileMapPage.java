@@ -19,10 +19,15 @@ public class TileMapPage{
     /** TileMapPage is just a junior TileMap. **/
     /** Data copied from tile maps. **/
     public int size;           //  Might be more effiecent to make the page reference a global size
+    public int state = 0,lastState;
+    public boolean stateChange,checked;
     public int[][] data;       //  This tells the build method which tiles to use
     public Quad[][] tiles;     //  Meshes used for tiles
     public Node pageNode;       //  Serves as the 'rootNode' for the tile map
     public Geometry[][] tileGeo;// Geometries attach the Quads to the scene graph, making them renderable
+    public Geometry[][] archGeo;// Geometry layer for architectural tiles
+    public Geometry debugGeo;
+    
     
     /** External material references. **/
     public Material[][] i_tileMatList;
@@ -134,6 +139,21 @@ public class TileMapPage{
     }
     
     public void setTileMaterial(int x, int y, Material mat){ this.tileGeo[x][y].setMaterial(mat);}
+    public void setDebugGeoMat(Material mat){this.debugGeo.setMaterial(mat);}
+    
+    public void setState(int value){
+        if(value != state){
+            //if(stateChange == false){
+                state = value;
+                stateChange = true;
+            //}
+        }
+        checked = true;
+    }
+    
+    public int getState(){return this.state;}
+    public boolean stateChanged(){return stateChange;}
+    public boolean wasChecked(){return checked;}
 
     public Node getNode(){
         return this.pageNode;

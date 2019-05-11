@@ -11,6 +11,8 @@ import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
+import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
@@ -32,12 +34,15 @@ public class PlayerControl extends AbstractControl {
     //Right-click a local variable to encapsulate it with getters and setters.
     
     public Node pNode;
+    public Node combatNode;
     private Quad pQuad;
     private Geometry pGeo;
     private Geometry shadowGeo;
+    private Geometry combatGeo;
     
     public Material[][] playerMat;
-    public Material sMat;
+    public Material sMat;    
+    public Material[] cMat;
 
     private int pWidth = 4;
     private int pHeight = 4;
@@ -47,11 +52,21 @@ public class PlayerControl extends AbstractControl {
 
     private float frameTime = 0;
     private float stepTime = 0.21f;
-    private int moveMask = 0,dirMask = 1; // No movement, SouthDir
+    private float actionTime = 0.1f,actionCoolDown = 0.1f, actionTimer;
+    private int moveMask = 0,dirMask = 1,actionMask = 0; // No movement, SouthDir, no action
     private int frame=0,animID=0;
+    private boolean action;
     
     public void setTileSize(int newSize){this.tileSize = newSize;}
     public void setMovementMask(int mask){this.moveMask = mask;}
+    public void setActionMask(int mask){
+        if(actionMask == 0){
+            this.actionMask = mask;
+        }
+    }
+    
+    public int getMovementMask(){return this.moveMask;}
+    public int getActionMask(){return this.actionMask;}
 
     public void createShadow(){
 
@@ -60,6 +75,14 @@ public class PlayerControl extends AbstractControl {
 
         pNode.attachChild(shadowGeo);
         shadowGeo.setLocalTranslation(-(pWidth * tileSize)/2,-(tileSize/4),0.5f);
+        
+        combatNode = new Node("Slash Node");
+        combatGeo = new Geometry("Slash", new Quad(3 * tileSize, 3 * tileSize));
+        combatGeo.setMaterial(cMat[0]);
+        pNode.attachChild(combatNode);
+        combatGeo.setLocalTranslation(-(3*tileSize)/2,-(3*tileSize)/2,1.5f);
+        combatNode.setLocalScale(1.5f);
+        combatNode.setLocalTranslation(0,(tileSize*0.5f),1.5f);
     }
 
     public void createPlayer(){            
@@ -70,12 +93,13 @@ public class PlayerControl extends AbstractControl {
         pNode = new Node("Player Node");
         pNode.attachChild(pGeo);
 
-        pGeo.setLocalTranslation(-(pWidth * tileSize)/2,-(tileSize/4),1);
+        pGeo.setLocalTranslation(-(pWidth * tileSize)/2,0,1);
         createShadow();
     }
     
     /** Parse the movement mask and determine best animation to play or continue playing. **/
     public void updateMoveMask(float tpf){
+        
         switch (moveMask) {
         //No movement
             case 0:
@@ -308,11 +332,55 @@ public class PlayerControl extends AbstractControl {
             animID = id;
         }
     }
+    public void updateActionFrames(){
+        if(actionTimer < actionTime/3){
+            if(action == false){
+                Quaternion rot = new Quaternion();
+                combatNode.attachChild(combatGeo);
+                switch(dirMask){
+                    case 0: // South
+                        rot.fromAngles(0,0, 90 * FastMath.DEG_TO_RAD);
+                        break;
+                    case 1:
+                        rot.fromAngles(0,0, -90 * FastMath.DEG_TO_RAD);
+                        break;
+                    case 2:
+                        rot.fromAngles(0,0, 180 * FastMath.DEG_TO_RAD);
+                        break;
+                    case 3:
+                        rot.fromAngles(0,0, 0 * FastMath.DEG_TO_RAD);
+                        break;
+                }
+                combatNode.setLocalRotation(rot);
+                action = true;
+            }
+            combatGeo.setMaterial(cMat[1]);
+        }else if(actionTimer < (actionTime/3) *2){
+            combatGeo.setMaterial(cMat[3]);
+        }else if(actionTimer < actionTime){
+            combatGeo.setMaterial(cMat[5]);
+        }
+    }
 
     @Override
     protected void controlUpdate(float tpf) {
-        updateMoveMask(tpf);
-
+        if(actionMask == 0){
+            updateMoveMask(tpf);
+        }else{
+            if(actionTimer < actionTime){
+                updateActionFrames();
+                pGeo.setMaterial(playerMat[5][dirMask]);
+                actionTimer += tpf;
+            }else if(actionTimer < actionTime + actionCoolDown){
+                actionTimer += tpf;
+            }else{
+                actionTimer = 0;
+                pGeo.setMaterial(playerMat[0][dirMask]);
+                combatNode.detachChild(combatGeo);
+                action = false;
+                actionMask = 0;
+            }
+        }
     }
 
     @Override
