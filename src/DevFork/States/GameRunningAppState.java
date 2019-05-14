@@ -65,7 +65,8 @@ public class GameRunningAppState extends AbstractAppState{
         gameScreenHeight = cam.getHeight();
         
         // Create the World
-        world = new WorldManagerState(guiNode,24);
+        world = new WorldManagerState(guiNode,64);
+        world.setResolution(gameScreenWidth, gameScreenHeight);
         
         // Set the world in motion!
         this.stateManager.attach(world);
@@ -97,13 +98,14 @@ public class GameRunningAppState extends AbstractAppState{
         inputManager.addMapping("S", new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping("A", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("D", new KeyTrigger(KeyInput.KEY_D));
+        
         inputManager.addMapping("Q", new KeyTrigger(KeyInput.KEY_Q));
         inputManager.addMapping("E", new KeyTrigger(KeyInput.KEY_E));
         
         inputManager.addMapping("L_SHIFT", new KeyTrigger(KeyInput.KEY_LSHIFT));
         inputManager.addMapping("R_SHIFT", new KeyTrigger(KeyInput.KEY_RSHIFT));
         
-        inputManager.addMapping("Enter", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
         inputManager.addMapping("Enter", new KeyTrigger(KeyInput.KEY_RETURN));
         
         inputManager.addMapping("Click", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));

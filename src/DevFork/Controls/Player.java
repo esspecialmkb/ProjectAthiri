@@ -6,6 +6,7 @@
 package DevFork.Controls;
 
 import DevFork.Tiles.TileChunk;
+import DevFork.VirtualMesh;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
@@ -25,13 +26,18 @@ import java.io.IOException;
  *
  * @author Michael A. Bradford <SankofaDigitalMedia.com>
  */
-class Player extends Entity{
+public class Player extends Entity{
+    public Player(){
+        super();
+    }
 
     @Override
     public int getType(){ return 1;}
 
     @Override
     public void buildMesh(){
+        
+        m = new VirtualMesh();
         m.addVertex(new Vector3f(-0.25f,1.5f,0));
         m.addVertex(new Vector3f(0.25f,1.5f,0));
         m.addVertex(new Vector3f(-0.25f,1,0));
@@ -56,17 +62,31 @@ class Player extends Entity{
         m.addColor(0.6f, 0.0f, 0.0f, 1.0f);
         m.addColor(0.6f, 0.0f, 0.0f, 1.0f);
         m.addColor(0.6f, 0.0f, 0.0f, 1.0f);
+        
+        m.addNormal(new Vector3f(0,0,-1));
+        m.addNormal(new Vector3f(0,0,-1));
+        m.addNormal(new Vector3f(0,0,-1));
+        m.addNormal(new Vector3f(0,0,-1));
+        m.addNormal(new Vector3f(0,0,-1));
+        m.addNormal(new Vector3f(0,0,-1));
+        m.addNormal(new Vector3f(0,0,-1));
+        m.addNormal(new Vector3f(0,0,-1));
+        
+        m.buildMesh();
 
     }
 
     @Override
     public void buildEntity(TileChunk chunk, Material mat) {
 
-        n = new Node();
+        super.n = new Node("Player Node");
         //m.setMaterial(mat);
-        m.buildMesh();
-        g = new Geometry("Player", m.getMesh());
-        g.setMaterial(mat);
+        this.buildMesh();
+        System.out.println("Vertext Count: " + m.getVertexCount());
+        super.g = new Geometry("Player", m.getMesh());
+        super.g.setMaterial(mat);
+        super.n.attachChild(super.g);
+        super.g.setLocalScale(chunk.getTileSize());
     }
     
     @Override

@@ -15,7 +15,7 @@ import com.jme3.renderer.ViewPort;
  *
  * @author Michael A. Bradford <SankofaDigitalMedia.com>
  */
-class WorldEntity extends Entity{
+public class WorldEntity extends Entity{
 
 
     public int interact(int flag, int value){ return 0;};

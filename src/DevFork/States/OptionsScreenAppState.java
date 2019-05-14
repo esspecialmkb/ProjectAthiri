@@ -8,12 +8,29 @@ package DevFork.States;
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
+import com.jme3.system.AppSettings;
 
 /**
  *
  * @author Michael A. Bradford <SankofaDigitalMedia.com>
  */
 public class OptionsScreenAppState extends AbstractAppState{
+    // Constants use public static final
+    public static class Options{
+        private Options(){}
+        public static int screenW;
+        public static int screenH;
+        public static float tileSizeDefault;
+    }
+    
+    public OptionsScreenAppState(AppSettings settings){
+        settings.getBitsPerPixel();
+        settings.getDepthBits();
+        settings.getHeight();
+        settings.getWidth();
+        settings.getRenderer();
+        
+    }
     
     @Override
     public void initialize(AppStateManager stateManager, Application app) {

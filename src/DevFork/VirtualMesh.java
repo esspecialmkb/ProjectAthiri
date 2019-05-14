@@ -102,7 +102,7 @@ public class VirtualMesh{
 
         // Setting buffers for independent mesh
         m.setBuffer(VertexBuffer.Type.Position, 3, BufferUtils.createFloatBuffer(vertices));
-
+        m.setBuffer(VertexBuffer.Type.Normal, 3, BufferUtils.createFloatBuffer(normals));
         m.setBuffer(VertexBuffer.Type.Index, 1, BufferUtils.createShortBuffer(triIndex));
 
         m.updateBound();

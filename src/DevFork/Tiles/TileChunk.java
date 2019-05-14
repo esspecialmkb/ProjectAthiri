@@ -5,6 +5,7 @@
  */
 package DevFork.Tiles;
 
+import DevFork.Controls.Entity;
 import DevFork.OpenSimplexNoise;
 import DevFork.VirtualMesh;
 import Utility.SimplexNoise;
@@ -22,6 +23,8 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  *  TileChunk maintains a page of tiles
@@ -31,18 +34,23 @@ import java.io.IOException;
 public class TileChunk extends AbstractControl{
     int x;
     int y;
+    float sceneX;
+    float sceneY;
     double[][] tileData;
     int[][] colData;
     Tile[][] tiles;
     float tileSize;
     //Node tileChunkNode;
     boolean isLoaded;
+    
+    Collection<Entity> entityList = new ArrayList<>();
 
     //  Scene element
     VirtualMesh m;
     Geometry g;
     Node n;
     Material tileMat;
+    boolean active;
     
     //  State control
     int state = -1;
@@ -51,6 +59,7 @@ public class TileChunk extends AbstractControl{
     public TileChunk(){
         isLoaded = false;
     }
+    
     public TileChunk(int x, int y, float tileSize){
         this.x = x;
         this.y = y;
@@ -59,12 +68,33 @@ public class TileChunk extends AbstractControl{
         colData = new int[16][16];
         tiles = new Tile[16][16];
         m = new VirtualMesh();
-        n = new Node();
+        n = new Node("TileChunk " + x + ", " + y);
         //isLoaded = false;
+        
+        
     }
+    public float getTileSize(){ return this.tileSize;}
     public int getX(){return this.x;}
     public int getY(){return this.y;}
     public int getState(){return this.state;}
+    public void setState(int newState){
+        this.newState = newState;
+    }
+    
+    public void addEntity(Entity entity){ entityList.add(entity);}
+    public void removeEntity(Entity entity){ entityList.remove(entity);}
+    
+    public void setScenePos(float sceneX, float sceneY){
+        this.sceneX = sceneX;
+        this.sceneY = sceneY;
+    }
+    public void move(float movX,float movY){
+        sceneX += movX;
+        sceneY += movY;
+    }
+    public void setActive(){
+        active = true;
+    }
     
     public void setTileMat(Material mat){ this.tileMat = mat;}
     public void unloadChunk(){
@@ -199,12 +229,17 @@ public class TileChunk extends AbstractControl{
             g = new Geometry("Chunk", m.getMesh());
             g.setMaterial(tileMat);
             n.attachChild(g);
+            n.addControl(this);
         //}                
     }
 
     @Override
     protected void controlUpdate(float tpf) {
-        
+        if(!active){
+            //
+        }else if(active){
+            System.out.println("Chunk " + x + ", " + y + " active!");
+        }
     }
 
     @Override

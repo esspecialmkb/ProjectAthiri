@@ -116,6 +116,13 @@ public class StartScreenAppState extends AbstractAppState{
         detachInput();
     }
     
+    public void startGame(){
+        GameRunningAppState gameState = new GameRunningAppState();
+        stateManager.attach(gameState);
+        node.removeFromParent();
+        stateManager.detach(this);
+    }
+    
     private void attachInput(){
         inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_UP));
         inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_DOWN));
@@ -146,10 +153,7 @@ public class StartScreenAppState extends AbstractAppState{
             if(name.equals("Enter") && !keyPressed){
                 ready = true;
                 
-                GameRunningAppState gameState = new GameRunningAppState();
-                stateManager.attach(gameState);
-                node.removeFromParent();
-                //stateManager.detach(this);
+                startGame();
             }
         }
     };
