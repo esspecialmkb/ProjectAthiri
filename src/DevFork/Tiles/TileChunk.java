@@ -71,7 +71,7 @@ public class TileChunk extends AbstractControl{
         n = new Node("TileChunk " + x + ", " + y);
         //isLoaded = false;
         
-        
+        this.state = 1;
     }
     public float getTileSize(){ return this.tileSize;}
     public int getX(){return this.x;}
@@ -152,9 +152,6 @@ public class TileChunk extends AbstractControl{
     }
     public void buildMesh(){
         double range = 150;
-        //System.out.println("Low val: " + genLowValue);
-        //System.out.println("High val: " + genHighValue);
-        //System.out.println("Range: " + range);
 
         //if(isLoaded){
             for(int x =0; x < 16; x++){
@@ -249,15 +246,42 @@ public class TileChunk extends AbstractControl{
     
     @Override
     public void write(JmeExporter ex) throws IOException {
+        System.out.println("Write chunk...");
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(enabled, "enabled", true);
-        oc.write(spatial, "spatial", null);
+        //oc.write(spatial, "spatial", null);
+        
+        if(this.state > 0){
+            // pos
+            oc.write(this.x, "ChunkX", 0);
+            oc.write(this.y, "ChunkY", 0);
+        }if(this.state > 1){
+            // tileData
+            oc.write(tileData, "TileData", null);
+        }if(this.state > 2){
+            // mesh data
+            // Create getters for VirtualMesh or make it savable
+            // Same for Tile class
+            
+        }if(this.state > 3){
+            // entity data
+        }
     }
 
     @Override
     public void read(JmeImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
         enabled = ic.readBoolean("enabled", true);
-        spatial = (Spatial) ic.readSavable("spatial", null);
+        //spatial = (Spatial) ic.readSavable("spatial", null);
+        
+        if(this.state > 0){
+            // pos
+        }if(this.state > 1){
+            // tileData
+        }if(this.state > 2){
+            // mesh data
+        }if(this.state > 3){
+            // entity data
+        }
     }
 }// End of TileChunk.class

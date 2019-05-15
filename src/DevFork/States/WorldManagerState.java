@@ -15,12 +15,17 @@ import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.plugins.FileLocator;
+import com.jme3.export.binary.BinaryExporter;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *  The WorldManagerState maintains the active TileChunks and Humanoids
@@ -61,6 +66,8 @@ public class WorldManagerState extends AbstractAppState{
     float mapY;
     float mapScreenX;   // mapX * tileSize; used to position the tile chunks on the screen. Calculated from map position
     float mapScreenY;
+    int chunkX;
+    int chunkY;
     
     float screenWidth, screenHeight;    // In-game screen resolution, allows main screen to be a different size
     float camOffsetX, camOffsetY;       // mapScreen = (mapX + camOffset) * tileSize; Used for camera shake and indepent camera movement
@@ -105,36 +112,9 @@ public class WorldManagerState extends AbstractAppState{
             chunk.getNode().setLocalTranslation( (chunk.getX() * 16 * tileSize)- this.sceneRootPosX ,(chunk.getY() * 16 * tileSize)-this.sceneRootPosY,0);
         }
     }
-    public void moveMap(float movX, float movY){
-        for (TileChunk chunk : chunkList) {
-            chunk.getNode().move(movX, movY, 0);
-            chunk.move(movX, movY);
-        }
-        
-        // Update screen coordinates
-        updateCoordinates(movX, movY);
-    }
     
-    public void updateChunks(){
-        int chunkX = (int) Math.floor(mapX / 16);
-        int chunkY = (int) Math.floor(mapY / 16);
-        // We need to update the chunk's state
-        for( TileChunk chunk : chunkList){
-            switch(chunk.getState()){
-                case 1:
-                    break;
-                case 2:
-                    break;
-                case 3:
-                    break;
-                case 4:
-                    break;
-            }
-            if((chunk.getX() == chunkX) && (chunk.getY() == chunkY)){
-                // This is the chunk that the player is in
-            }
-        }
-    }
+    
+    
     
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
@@ -204,6 +184,9 @@ public class WorldManagerState extends AbstractAppState{
         
         world.move(0,0,-10);
         guiNode.attachChild(world);
+        
+        // Testing file save
+        saveTileChunk(chunkList.get(0));
     }
     
     public void createPlayer(){
@@ -249,6 +232,11 @@ public class WorldManagerState extends AbstractAppState{
         float movX = 0; 
         float movY = 0;
         
+        //  Calculate current chunk location
+        chunkX = (int)Math.floor(mapX / 16);
+        chunkY = (int)Math.floor(mapY / 16);
+        
+        //System.out.println("current chunk: " + chunkX + ", " + chunkY);
         
         if(inputBuffer[0]){
             movY = -(tpf * movSpeed) * this.tileSize;
@@ -265,6 +253,62 @@ public class WorldManagerState extends AbstractAppState{
         moveMap(movX, movY);
         
         updateChunks();
+    }
+    
+    public void moveMap(float movX, float movY){
+        for (TileChunk chunk : chunkList) {
+            chunk.getNode().move(movX, movY, 0);
+            chunk.move(movX, movY);
+        }
+        
+        // Update screen coordinates
+        updateCoordinates(movX, movY);
+    }
+    
+    public void updateChunks(){
+        //chunkX = (int) Math.floor(mapX / 16);
+        //chunkY = (int) Math.floor(mapY / 16);
+        // We need to update the chunk's state
+        for( TileChunk chunk : chunkList){
+            switch(chunk.getState()){
+                case 1:
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+            }
+            if((chunk.getX() == chunkX) && (chunk.getY() == chunkY)){
+                // This is the chunk that the player is in
+            }
+        }
+    }
+    
+    private void saveAllChunks(){
+        for(TileChunk chunk: chunkList){
+            saveTileChunk(chunk);
+        }
+    }
+    
+    private void saveTileChunk(TileChunk chunk){
+        
+        String userHome = System.getProperty("user.home");
+        
+        userHome += "/ProjectAthiri";
+        
+        System.out.println("Save Chunk");
+        
+        BinaryExporter exporter = BinaryExporter.getInstance();
+        File file = new File(userHome+"/LastMap/Chunks/"+"Chunk_" + chunk.getX() + "_" + chunk.getY() + ".j3o");
+        
+        System.out.println(userHome+"/LastMap/Chunks/"+"Chunk_" + chunk.getX() + "_" + chunk.getY() + ".j3o");
+        try {
+            exporter.save(chunk, file);
+        } catch (IOException ex) {
+            Logger.getLogger(WorldManagerState.class.getName()).log(Level.SEVERE, "Error: Failed to save game!", ex);
+        }
     }
     
     @Override
