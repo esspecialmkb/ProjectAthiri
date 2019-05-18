@@ -18,6 +18,7 @@ import com.jme3.asset.plugins.FileLocator;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector2f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import java.io.File;
@@ -48,6 +49,7 @@ public class WorldManagerState extends AbstractAppState{
     
     //  Responsibility #1 TileChunks
     ArrayList<TileChunk> chunkList;
+    ArrayList<Vector2f> savedChunks;
     int chunkLoadX;
     int chunkLoadY;
     
@@ -114,8 +116,6 @@ public class WorldManagerState extends AbstractAppState{
     }
     
     
-    
-    
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
@@ -126,54 +126,7 @@ public class WorldManagerState extends AbstractAppState{
         assetManager.registerLocator(directoryName, FileLocator.class);
         
         //  Build chunks
-        //  1.) Prepare the TileChunk
-        chunkList = new ArrayList<>();
-        System.out.println("Chunk Generate");
-        for(int x = 0; x < 4; x++){
-            for(int y = 0; y < 4; y++){
-                TileChunk chunk = new TileChunk(x,y, tileSize);
-                chunk.setState(1);
-                //chunk.generateChunkTerrain(FEATURE_SIZE);
-                //chunkList.add(new TileChunk(x,y, tileSize));
-                chunkList.add(chunk);
-            }
-        }
-
-        //  2.) Create Simplex generator
-        seed = (long) (Math.random() *1000);
-        noise = new OpenSimplexNoise(seed);
-        
-        //  3.) Generate tiles
-        for(int i = 0; i < chunkList.size(); i++){
-            chunkList.get(i).generateChunkTerrain(noise, FEATURE_SIZE);
-            chunkList.get(i).setState(2);
-        }
-        
-        //  4.) Create materials
-        tileMat = new Material(app.getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
-        tileMat.setBoolean("VertexColor", true);
-        tileMat.setColor("Color", ColorRGBA.White);
-        
-        //  5.) Construct the world node. All chunks are moved relative to this
-        world = new Node("World");
-        sceneRootPosX = 0;
-        sceneRootPosY = 0;
-        
-        mapScreenX = sceneRootPosX + (screenWidth/2);
-        mapScreenY = sceneRootPosY + (screenHeight/2);
-        
-        mapX = mapScreenX / tileSize;
-        mapY = mapScreenY / tileSize;
-        
-        //  6.) Build Tile Meshes
-        for(int i = 0; i < chunkList.size(); i++){
-            chunkList.get(i).setTileMat(tileMat);
-            chunkList.get(i).buildMesh();
-            chunkList.get(i).setState(3);
-            world.attachChild(chunkList.get(i).getNode());
-            chunkList.get(i).setState(4);
-        }
-        
+        generateMap(8,8);
         //Player setup
         this.createPlayer();
         
@@ -186,7 +139,7 @@ public class WorldManagerState extends AbstractAppState{
         guiNode.attachChild(world);
         
         // Testing file save
-        saveTileChunk(chunkList.get(0));
+        saveAllChunks();
     }
     
     public void createPlayer(){
@@ -286,6 +239,64 @@ public class WorldManagerState extends AbstractAppState{
         }
     }
     
+    //  TileChunk operations
+    private void generateMap(int xSize, int ySize){
+        //  Seed for generator
+        seed = (long) (Math.random() *1000);
+        noise = new OpenSimplexNoise(seed);
+        
+        //  Materials
+        tileMat = new Material(app.getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+        tileMat.setBoolean("VertexColor", true);
+        tileMat.setColor("Color", ColorRGBA.White);
+        
+        //  World node
+        world = new Node("World");
+        sceneRootPosX = 0;
+        sceneRootPosY = 0;
+        
+        mapScreenX = sceneRootPosX + (screenWidth/2);
+        mapScreenY = sceneRootPosY + (screenHeight/2);
+        
+        mapX = mapScreenX / tileSize;
+        mapY = mapScreenY / tileSize;
+        
+        //  Chunk list
+        chunkList = new ArrayList<>();
+        savedChunks = new ArrayList<>();
+        
+        for(int x = 0; x < xSize; x++){
+            for(int y = 0; y < ySize; y++){
+                //  Create chunk object
+                TileChunk chunk = new TileChunk(x,y, tileSize);
+                chunk.setState(1);
+                
+                //  Generate terrain tiles
+                chunk.generateChunkTerrain(noise, FEATURE_SIZE);
+                chunk.setState(2);
+                
+                //  Build chunk meshes
+                chunk.setTileMat(tileMat);
+                chunk.buildMesh();
+                chunk.setState(3);
+                world.attachChild(chunk.getNode());
+                chunk.setState(4);
+                
+                chunkList.add(chunk);
+                
+                saveTileChunk(chunk);
+            }
+        }
+    }
+    
+    private void generateTowns(){
+        //  Randomly distribute a set of points from map Min to Max
+        ArrayList<Vector2f> pointsList = new ArrayList<>();
+        for(int p = 0; p < 20; p++){
+            pointsList.add( new Vector2f( (int)(Math.random() * (7 * 16)) + 16, (int)(Math.random() * (7 * 16)) + 16));
+        }
+        
+    }
     private void saveAllChunks(){
         for(TileChunk chunk: chunkList){
             saveTileChunk(chunk);

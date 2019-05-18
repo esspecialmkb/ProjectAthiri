@@ -249,7 +249,9 @@ public class TileChunk extends AbstractControl{
         System.out.println("Write chunk...");
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(enabled, "enabled", true);
-        //oc.write(spatial, "spatial", null);
+        
+        //  Write the chunk state
+        oc.write(this.state, "ChunkState", 0);
         
         if(this.state > 0){
             // pos
@@ -261,7 +263,8 @@ public class TileChunk extends AbstractControl{
         }if(this.state > 2){
             // mesh data
             // Create getters for VirtualMesh or make it savable
-            // Same for Tile class
+            // Save the Geometry for now!
+            oc.write(g, "ChunkGeometry", null);
             
         }if(this.state > 3){
             // entity data
@@ -272,14 +275,19 @@ public class TileChunk extends AbstractControl{
     public void read(JmeImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
         enabled = ic.readBoolean("enabled", true);
-        //spatial = (Spatial) ic.readSavable("spatial", null);
+        //  Read the chunk state
+        this.state = ic.readInt("ChunkState", -1);
         
         if(this.state > 0){
             // pos
+            this.x = ic.readInt("ChunkX", 0);
+            this.y = ic.readInt("ChunkY", 0);
         }if(this.state > 1){
             // tileData
+            this.tileData = ic.readDoubleArray2D("TileData", null);
         }if(this.state > 2){
             // mesh data
+            this.g = (Geometry) ic.readSavable("ChunkGeometry", null);
         }if(this.state > 3){
             // entity data
         }
