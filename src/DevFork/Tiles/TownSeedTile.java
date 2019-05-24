@@ -23,10 +23,10 @@ public class TownSeedTile extends Tile {
         mesh.addVertex(new Vector3f((x * size)      ,((y + 1) * size),0));
         mesh.addVertex(new Vector3f(((x + 1) * size),((y + 1) * size),0));
         
-        mesh.addVertex(new Vector3f((x * size) + (size/4)    ,  (y * size)  + (size/4),0));
-        mesh.addVertex(new Vector3f(((x + 1) * size) - (size / 4), (y * size)  + (size/4),0));
-        mesh.addVertex(new Vector3f((x * size)  + (size/4)   ,((y + 1) * size) - (size / 4),0));
-        mesh.addVertex(new Vector3f(((x + 1) * size) - (size / 4),((y + 1) * size) - (size / 4),0));
+        mesh.addVertex(new Vector3f((x * size) + (size/4)           ,  (y * size)  + (size/4),0));
+        mesh.addVertex(new Vector3f(((x + 1) * size) - (size / 4)   , (y * size)  + (size/4),0));
+        mesh.addVertex(new Vector3f((x * size)  + (size/4)          ,((y + 1) * size) - (size / 4),0));
+        mesh.addVertex(new Vector3f(((x + 1) * size) - (size / 4)   ,((y + 1) * size) - (size / 4),0));
 
         mesh.addIndex((short)(2 + indexOffset), (short)(0 + indexOffset), (short)(1 + indexOffset));
         mesh.addIndex((short)(1 + indexOffset), (short)(3 + indexOffset), (short)(2 + indexOffset));
