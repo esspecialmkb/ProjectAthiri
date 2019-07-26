@@ -1,0 +1,33 @@
+class GUIElement {
+	private BitmapFont font;
+	private BitmapText text;
+	private String sText;
+	private Node hostNode;
+	private Geometry[] geometry;
+	private Vector2f localTranslation;
+	private int status;
+	
+	public GUIElement(BitmapFont font, String text, int x, int y) {
+		this.font = font;
+		this.sText = text;
+		this.x = x;
+		this.y = y;
+	}	
+	
+	public abstract void buildElement();
+}
+
+class GUIButton extends GUIElement {
+	
+	public GUIButton(BitmapFont font, String text, int x, int y) {
+		super(font, text, x, y);
+	}
+	
+	@Override
+	public void buildElement() {
+		this.text = new BitmapText(font,false);
+        this.text.setSize(font.getCharSet().getRenderedSize());
+        this.text.setText(sText);
+        this.text.setLocalTranslation(x, y, 1);
+	}
+}
