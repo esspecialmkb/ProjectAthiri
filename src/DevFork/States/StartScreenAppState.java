@@ -76,7 +76,7 @@ public class StartScreenAppState extends AbstractAppState{
         
         node = new Node("Start");
         uiFont = app.getAssetManager().loadFont("Interface/Fonts/Default.fnt");
-        //  Text
+        //  These button objects need to be wrapped into classes to abstract creation
         bTextMain = new BitmapText[3];
         bTextMain[0] = new BitmapText(uiFont,false);
         bTextMain[0].setSize(uiFont.getCharSet().getRenderedSize());
