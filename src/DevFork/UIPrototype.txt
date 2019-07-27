@@ -23,6 +23,7 @@ class GUIElement {
 		this.localTranslation = new Vector2f( x, y);
 		this.size = new Vector2f(sizeX/2, sizeY/2);
 		this.mat = mat;
+		this.status = 0;
 	}	
 	
 	// This abstract method will be used to constrcut 
@@ -72,5 +73,22 @@ class GUIButton extends GUIElement {
 		
 		// Return the node that the element's geometry is attached to
 		return this.node;
+	}
+}
+
+class GUIPanel extends GUIElement {
+	
+	public GUIPanel(BitmapFont font, String text, int x, int y, int sizeX, int sizeY, Material mat) {
+		super(font, text, x, y, sizeX, sizeY, mat);
+	}
+	
+	public GUIPanel(int x, int y, int sizeX, int sizeY, Material mat) {
+		
+	}
+	
+	@Override
+	public Node buildElement() {
+		// Panels should have an optional text title
+		
 	}
 }
