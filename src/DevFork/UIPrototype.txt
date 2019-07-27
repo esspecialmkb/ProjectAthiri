@@ -1,33 +1,76 @@
 class GUIElement {
+	// Text-related members
 	private BitmapFont font;
 	private BitmapText text;
 	private String sText;
-	private Node hostNode;
+	
+	// Scene-graph related members
+	private Node node;
 	private Geometry[] geometry;
 	private Vector2f localTranslation;
+	private Vector2f size;
+	private Material mat;
+	
+	// State-related members
 	private int status;
 	
-	public GUIElement(BitmapFont font, String text, int x, int y) {
+	// Callback interface
+	private EventListener listener;
+	
+	public GUIElement(BitmapFont font, String text, int x, int y, int sizeX, int sizeY, Material mat) {
 		this.font = font;
 		this.sText = text;
-		this.x = x;
-		this.y = y;
+		this.localTranslation = new Vector2f( x, y);
+		this.size = new Vector2f(sizeX/2, sizeY/2);
+		this.mat = mat;
 	}	
 	
-	public abstract void buildElement();
+	// This abstract method will be used to constrcut 
+	//the Element and return the node in order to attach to the scene graph
+	public abstract Node buildElement();
+	
+	// Member to setup event listener
+	public void registerEventListener( EventListener listener) {
+		this.listener = listener;
+	}
+}
+
+// This is an interface that will be used for GUI-related callbacks in order to respond to clicks
+interface EventListener{
+	
+	void onEvent();
+}
+
+// This is a class that implements the EventListener that would be created inside the GUI thread to interact
+//This class might benefit from encapsulating a main/global GUI object
+class ButtonEvent implements EventListener{
+	@Override
+	public void onEvent() {
+		// Custom button event being handled here
+	}
 }
 
 class GUIButton extends GUIElement {
 	
-	public GUIButton(BitmapFont font, String text, int x, int y) {
-		super(font, text, x, y);
+	public GUIButton(BitmapFont font, String text, int x, int y, int sizeX, int sizeY, Material mat) {
+		super(font, text, x, y, sizeX, sizeY, mat);
 	}
 	
 	@Override
-	public void buildElement() {
+	public Node buildElement() {
+		// Create the text component
 		this.text = new BitmapText(font,false);
         this.text.setSize(font.getCharSet().getRenderedSize());
         this.text.setText(sText);
         this.text.setLocalTranslation(x, y, 1);
+		
+		// Create the visual component 
+		this.geometry = new Geometry(new Quad(size.x, size.y));
+		this.geometry.setMaterial(mat);
+		this.node = new Node();
+		this.node.attachChild(geometry);
+		
+		// Return the node that the element's geometry is attached to
+		return this.node;
 	}
 }
