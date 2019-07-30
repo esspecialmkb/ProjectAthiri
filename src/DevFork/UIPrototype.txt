@@ -14,6 +14,10 @@ class GUIElement {
 	// State-related members
 	private int status;
 	
+	// These class members help the GUI maintain relationships
+	private GUIElement parent;
+	private ArrayList<GUIElement> children;
+	
 	// Callback interface
 	private EventListener listener;
 	
@@ -26,6 +30,18 @@ class GUIElement {
 		this.status = 0;
 	}	
 	
+	// Set this element's parent
+	public void setParent(GUIElement element) {
+		this.parent = element;
+	}
+	
+	// Add a child to the list of elements
+	public void addChild(GUIElement element) {
+		if(children.exists(element) == false) {
+			this.children.add(element);
+		}
+	}
+	
 	// This abstract method will be used to constrcut 
 	//the Element and return the node in order to attach to the scene graph
 	public abstract Node buildElement();
@@ -34,20 +50,58 @@ class GUIElement {
 	public void registerEventListener( EventListener listener) {
 		this.listener = listener;
 	}
+	
+	// This method provides a method to call the callback
+	public void callEvent() {
+		if(this.listener != null) {
+			this.listener.onEvent();
+		}
+	}
+	
+	// This method provides a method to call the callback with a code
+	public void callEventCode(int code) {
+		if(this.listener != null) {
+			this.listener.onEventCode(code);
+		}
+	}
 }
 
 // This is an interface that will be used for GUI-related callbacks in order to respond to clicks
 interface EventListener{
 	
 	void onEvent();
+	void onEventCode(int code);
 }
 
 // This is a class that implements the EventListener that would be created inside the GUI thread to interact
-//This class might benefit from encapsulating a main/global GUI object
+//This class might benefit from being encapsulated in a main/global GUI object or AppState
 class ButtonEvent implements EventListener{
 	@Override
 	public void onEvent() {
 		// Custom button event being handled here
+	}
+	
+	@Override
+	public void onEventCode(int code) {
+		// If diferent buttons are using the same event-hook,
+		//then we can use the code to tell the difference.
+	}
+}
+
+// An AppState could encapsulate an entire UI screen and its event listeners
+// The UIState could also host factory methods to add GUIElements to the screen
+class UIState extends AbstractAppState {
+	private ArrayList<GUIElement> guiElements;
+	
+	public UIState(){
+		
+	}
+	
+	// The elements on this UIState could be built during the init method
+	@Override
+	public void initialize(AppStateManager aSMgr, Application app) {
+		super.initialize(aSMgr, app);
+		
 	}
 }
 
@@ -69,12 +123,14 @@ class GUIButton extends GUIElement {
 		this.geometry = new Geometry(new Quad(size.x, size.y));
 		this.geometry.setMaterial(mat);
 		this.node = new Node();
-		this.node.attachChild(geometry);
+		this.node.attachChild(this.text);
+		this.node.attachChild(this.geometry);
 		
 		// Return the node that the element's geometry is attached to
 		return this.node;
 	}
 }
+
 
 class GUIPanel extends GUIElement {
 	
@@ -82,13 +138,24 @@ class GUIPanel extends GUIElement {
 		super(font, text, x, y, sizeX, sizeY, mat);
 	}
 	
-	public GUIPanel(int x, int y, int sizeX, int sizeY, Material mat) {
-		
-	}
-	
 	@Override
 	public Node buildElement() {
 		// Panels should have an optional text title
+		if(sText != null || !sText.equals("")) {
+			this.text = new BitmapText(font,false);
+			this.text.setSize(font.getCharSet().getRenderedSize());
+			this.text.setText(sText);
+			this.text.setLocalTranslation(x, y, 1);
+		}
 		
+		// Create the visual component 
+		this.geometry = new Geometry(new Quad(size.x, size.y));
+		this.geometry.setMaterial(mat);
+		this.node = new Node();
+		this.node.attachChild(this.text);
+		this.node.attachChild(this.geometry);
+		
+		// Return the node that the element's geometry is attached to
+		return this.node;
 	}
 }
