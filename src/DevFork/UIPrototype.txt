@@ -93,7 +93,9 @@ class ButtonEvent implements EventListener{
 class UIState extends AbstractAppState {
 	private ArrayList<GUIElement> guiElements;
 	
-	public UIState(){
+	// The constructor can take the root node of a GUI tree as a parameter
+	//in order to build the UI-graph
+	public UIState(GUIElement root){
 		
 	}
 	
