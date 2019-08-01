@@ -1,0 +1,30 @@
+Description of UI Prototype system
+
+The UI state will need to implement some kind of visitor/builder pattern implementation. 
+-> https://dzone.com/articles/design-patterns-visitor
+https://dzone.com/articles/design-patterns-builder
+
+When the UI state is initialized, we run a build method that visits all of the GUIElements in the list 
+and constructs their scene-graph components.
+
+Using the app state to construct elements might allow us to remove scene-graph elements from the GUI 
+base class into the build method of the app state.
+
+The UI State Manager will need to maintain a list of UI States to implement sub-menu behavior. 
+
+The app state would also be a good place to host the event listeners of GUIElements. The AppState that 
+hosts the UI state should have access to a query method that asks the UI state for events that it needs 
+to act upon. The Event Handlers will be based on the Observer pattern
+
+There will be different versions of the UI state depending on where it is used...
+-> Main Menu UI State is used for the first menu the game goes to and manages separate UI States for sub-menus.
+
+-> Loading Screen UI State is used when the game needs to load level data and needs to shows progress of loading.
+
+-> HUD UI State is used in-game to show health, levels, status bars, etc... while the game is active. 
+Optionally, Inventory UI States will be managed from this specific UI State
+
+-> Pause Menu UI State is used when the player pauses the game.
+
+We may need to make a distinction between a UIState and UIStateManager. The UI State Manager should manage the 
+transition between different UI States as well as exposing methods to host app states in order to pass event information.
