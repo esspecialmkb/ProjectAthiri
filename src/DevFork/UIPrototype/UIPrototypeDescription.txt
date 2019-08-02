@@ -28,3 +28,17 @@ Optionally, Inventory UI States will be managed from this specific UI State
 
 We may need to make a distinction between a UIState and UIStateManager. The UI State Manager should manage the 
 transition between different UI States as well as exposing methods to host app states in order to pass event information.
+
+----------------------------------------------
+
+When GUI Elements use the composition pattern, they naturally gain the ability to add children. The operation method included 
+within this particular pattern seems to also be a good place to include the observer pattern for registering events as well.
+
+The top-level component in the UI should be the UI app state or at least a component that the UI state has global access to. 
+Removing the UI state should directly remove this top-level component which in turn will remove all of it's attached children.
+
+Optionally, this top-level component could be a solid window or transparent one. This window will have either panels or other 
+leaf-components attached as children.
+
+Using the composition pattern should also grant the possibility of separating scene graph class members into their own 
+leaf component while only needing a scene node root for the element left in the base component.
