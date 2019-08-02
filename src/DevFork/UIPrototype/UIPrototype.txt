@@ -1,3 +1,53 @@
+/* COMPOSITE PATTERN -----------------------------------*/
+// The abstract Component class is the base-class for the composite pattern
+// Provides default behaviors for child classes
+abstract class Component{
+	public void operation();
+	public void add(Component child);
+	public void remove(Component child);
+	public Component getChild(int index);
+}
+
+// The Leaf class is a component that will not have any children
+// Buttons, Scrollbars, Checkboxes etc... any Element that is a child 
+class Leaf extends Component{
+	@Override
+	public void operation();
+}
+
+// The Composite class allows children, can also recursively act upon children also
+// Windows, Panels, Listboxes, Tabs etc... basically any Element that has a child
+class Composite extends Component{
+	@Override
+	public void operation(){};
+	
+	@Override
+	public void add(Component child){};
+	
+	@Override
+	public void remove(Component child){};
+	
+	@Override
+	public Component getChild(int index){};
+}
+
+/* OBSERVER PATTERN -------------------------------------*/
+// The Subject interface grants a class that implements it to be observed
+// The object implementing this interface uses the notify method to update
+//the Observer that is interested in the event/change
+interface Subject{
+	public void addObserver(Observer observer);
+	public void removeObserver(int index);
+	public void notify();
+}
+
+// The Observer interface allows an object to receive events/notifications 
+//from a subject via the update method
+interface Observer{
+	public void update();
+}
+
+/* PROTOTYPE DESIGN */
 class GUIElement {
 	// Text-related members
 	private BitmapFont font;
@@ -65,7 +115,6 @@ class GUIElement {
 		}
 	}
 }
-
 // This is an interface that will be used for GUI-related callbacks in order to respond to clicks
 interface EventListener{
 	
