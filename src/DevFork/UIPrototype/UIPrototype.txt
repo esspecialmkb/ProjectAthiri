@@ -1,36 +1,3 @@
-/* COMPOSITE PATTERN -----------------------------------*/
-// The abstract Component class is the base-class for the composite pattern
-// Provides default behaviors for child classes
-abstract class Component{
-	public void operation();
-	public void add(Component child);
-	public void remove(Component child);
-	public Component getChild(int index);
-}
-
-// The Leaf class is a component that will not have any children
-// Buttons, Scrollbars, Checkboxes etc... any Element that is a child 
-class Leaf extends Component{
-	@Override
-	public void operation();
-}
-
-// The Composite class allows children, can also recursively act upon children also
-// Windows, Panels, Listboxes, Tabs etc... basically any Element that has a child
-class Composite extends Component{
-	@Override
-	public void operation(){};
-	
-	@Override
-	public void add(Component child){};
-	
-	@Override
-	public void remove(Component child){};
-	
-	@Override
-	public Component getChild(int index){};
-}
-
 /* OBSERVER PATTERN -------------------------------------*/
 // The Subject interface grants a class that implements it to be observed
 // The object implementing this interface uses the notify method to update
@@ -47,7 +14,82 @@ interface Observer{
 	public void update();
 }
 
-/* PROTOTYPE DESIGN */
+
+/* COMPOSITE PATTERN -----------------------------------*/
+// The abstract Component class is the base-class for the composite pattern
+// Provides default behaviors for child classes
+// We can combine/mix the Observer pattern here to add callback ability
+abstract class Component{
+	public void operation();
+	public void add(Component child);
+	public void remove(Component child);
+	public Component getChild(int index);
+}
+
+// The Leaf class is a component that will not have any children
+// Buttons, Scrollbars, Checkboxes etc... any Element that is a child 
+class Leaf extends Component implements Subject{
+	// List of observers
+	ArrayList<Observer> observers;
+	// We have to implement the methods from the Subject interface
+	public void addObserver(Observer observer){
+		this.observers.add(observer);
+	}
+	public void removeObserver(int index){
+		this.observers.remove(index);
+	}
+	public void notify(){
+		// We should probably add an overloaded method to call a specific observer
+		if(this.observers.size() > 0){
+			for(Observer o : observers){
+				// We should also add an overloaded update method (or not)
+				o.update();
+			}
+		}
+	}
+	
+	// Method extended from Component
+	@Override
+	public void operation();
+}
+
+// The Composite class allows children, can also recursively act upon children also
+// Windows, Panels, Listboxes, Tabs etc... basically any Element that has a child
+class Composite extends Component implements Subject{
+	// List of observers
+	ArrayList<Observer> observers;
+	// We have to implement the methods from the Subject interface
+	public void addObserver(Observer observer){
+		this.observers.add(observer);
+	}
+	public void removeObserver(int index){
+		this.observers.remove(index);
+	}
+	public void notify(){
+		// We should probably add an overloaded method to call a specific observer
+		if(this.observers.size() > 0){
+			for(Observer o : observers){
+				// We should also add an overloaded update method (or not)
+				o.update();
+			}
+		}
+	}
+	
+	// Method extended from Component
+	@Override
+	public void operation(){};
+	
+	@Override
+	public void add(Component child){};
+	
+	@Override
+	public void remove(Component child){};
+	
+	@Override
+	public Component getChild(int index){};
+}
+
+/* PROTOTYPE DESIGN ---------------------------------- */
 class GUIElement {
 	// Text-related members
 	private BitmapFont font;
