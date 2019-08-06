@@ -28,7 +28,7 @@ import com.jme3.scene.Node;
  * @author Michael A. Bradford <SankofaDigitalMedia.com>
  */
 public class StartScreenAppState extends AbstractAppState{
-    String directoryName = "C:\\Users\\esspe\\Documents\\jMonkeyProjects\\ProjectAthiri\\database\\";
+    String directoryName;
     BasicApplication app;
     
     // Should 'Final' keyword be used for guiNode, rootNode and Camera?
@@ -52,6 +52,10 @@ public class StartScreenAppState extends AbstractAppState{
     AppStateManager stateManager;
     
     public boolean isReady(){ return ready;}
+    
+    public StartScreenAppState(String directory){
+        this.directoryName = directory;
+    }
     
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
