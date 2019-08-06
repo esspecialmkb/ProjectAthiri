@@ -91,6 +91,9 @@ public class TileChunk extends AbstractControl{
     public void move(float movX,float movY){
         sceneX += movX;
         sceneY += movY;
+        
+        //Optional command
+        //this.node.move(movX, movY);
     }
     public void setActive(){
         active = true;
