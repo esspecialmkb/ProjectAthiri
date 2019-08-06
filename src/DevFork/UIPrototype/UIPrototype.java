@@ -1,11 +1,13 @@
 /* OBSERVER PATTERN -------------------------------------*/
-// The Subject interface grants a class that implements it to be observed
+// The Subject interface grants a class that implements it the ability to be observed
 // The object implementing this interface uses the notify method to update
 //the Observer that is interested in the event/change
 interface Subject{
 	public void addObserver(Observer observer);
 	public void removeObserver(int index);
 	public void notify();
+	// Only notify a specific Observer
+	public void notify(int index);
 }
 
 // The Observer interface allows an object to receive events/notifications 
@@ -31,29 +33,43 @@ abstract class Component{
 class Leaf extends Component implements Subject{
 	// List of observers
 	ArrayList<Observer> observers;
+	
 	// We have to implement the methods from the Subject interface
 	public void addObserver(Observer observer){
 		this.observers.add(observer);
 	}
+	
 	public void removeObserver(int index){
-		this.observers.remove(index);
+		if(this.observers.size() > 0 && index < this.observers.size()){
+			this.observers.remove(index);
+		}
 	}
+	
 	public void notify(){
 		// We should probably add an overloaded method to call a specific observer
 		if(this.observers.size() > 0){
 			for(Observer o : observers){
-				// We should also add an overloaded update method (or not)
 				o.update();
 			}
 		}
 	}
 	
+	public void notify(int index){
+		if(this.observers.size() > 0 && index < this.observers.size()){
+			this.observers.get(index).update();
+		}
+	}
+	
 	// Method extended from Component
 	@Override
-	public void operation();
+	public void operation(){
+		// This operation method can be used to trigger the leaf object's event
+		//i.e. Button click, scrollbar move, text update, etc...
+		//This operation will notify 1 or more of this object's observers depending on implementation
+	}
 }
 
-// The Composite class allows children, can also recursively act upon children also
+// The Composite class allows nested children, can also recursively act upon children also
 // Windows, Panels, Listboxes, Tabs etc... basically any Element that has a child
 class Composite extends Component implements Subject{
 	// List of observers
@@ -62,16 +78,23 @@ class Composite extends Component implements Subject{
 	public void addObserver(Observer observer){
 		this.observers.add(observer);
 	}
+	
 	public void removeObserver(int index){
 		this.observers.remove(index);
 	}
+	
 	public void notify(){
 		// We should probably add an overloaded method to call a specific observer
 		if(this.observers.size() > 0){
 			for(Observer o : observers){
-				// We should also add an overloaded update method (or not)
 				o.update();
 			}
+		}
+	}
+	
+	public void notify(int index){
+		if(this.observers.size() > 0 && index < this.observers.size()){
+			this.observers.get(index).update();
 		}
 	}
 	
