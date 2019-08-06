@@ -45,6 +45,10 @@ public class GameRunningAppState extends AbstractAppState{
     // WorldManager
     WorldManagerState world;
     
+    public GameRunningAppState(String directory){
+        this.directoryName = directory;
+    }
+    
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
