@@ -61,9 +61,9 @@ public class Vector2i implements Savable, Cloneable, java.io.Serializable{
     
     //  ADDITION - CARDINAL DIRECTIONS
     public static final Vector2i NORTH = new Vector2i(0, 1);
-    public static final Vector2i SOUTH = new Vector2i(0, 1);
-    public static final Vector2i EAST = new Vector2i(0, 1);
-    public static final Vector2i WEST = new Vector2i(0, 1);
+    public static final Vector2i SOUTH = new Vector2i(0, -1);
+    public static final Vector2i EAST = new Vector2i(-1, 0);
+    public static final Vector2i WEST = new Vector2i(1, 0);
     
     /**
      * the x value of the vector.
