@@ -21,7 +21,7 @@ import com.jme3.scene.Node;
  * @author Michael A. Bradford <SankofaDigitalMedia.com>
  */
 public class BlankAppState extends AbstractAppState{
-    String directoryName = "C:\\Users\\esspe\\Documents\\jMonkeyProjects\\ProjectAthiri\\database\\";
+    String directoryName;
     BasicApplication app;
     
     // Should 'Final' keyword be used for guiNode, rootNode and Camera?
@@ -35,6 +35,10 @@ public class BlankAppState extends AbstractAppState{
     
     int gameScreenWidth;
     int gameScreenHeight;
+	
+	public BlankAppState(String directory){
+		this.directoryName = directory;
+	}
     
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
@@ -67,10 +71,23 @@ public class BlankAppState extends AbstractAppState{
     public void cleanup() {
         super.cleanup();
     }
-    
-    private ActionListener actionListener = new ActionListener(){
-        public void onAction(String name, boolean keyPressed, float tpf){
+	
+	InputListener inputListener = new InputListener();
+	public class InputListener implements ActionListener{
 
+        @Override
+        public void onAction(String name, boolean keyPressed, float tpf){
+            
         }
-    };
+        boolean inputMask[] = new boolean[8];
+        
+        public boolean[] getInputMask(){ return this.inputMask; }
+        
+    }
+    
+//	private ActionListener actionListener = new ActionListener(){
+//	    public void onAction(String name, boolean keyPressed, float tpf){
+//		
+//	    }
+//	};
 }
