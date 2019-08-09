@@ -27,7 +27,7 @@ import com.jme3.scene.Node;
  * @author Michael A. Bradford <SankofaDigitalMedia.com>
  */
 public class GameRunningAppState extends AbstractAppState{
-    String directoryName = "C:\\Users\\esspe\\Documents\\jMonkeyProjects\\ProjectAthiri\\database\\";
+    String directoryName;
     BasicApplication app;
     
     // Should 'Final' keyword be used for guiNode, rootNode and Camera?
