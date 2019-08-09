@@ -22,19 +22,24 @@ import com.jme3.scene.Node;
  */
 public class BlankAppState extends AbstractAppState{
     String directoryName;
-    BasicApplication app;
     
-    // Should 'Final' keyword be used for guiNode, rootNode and Camera?
-    Node guiNode;
-    // 3D components -> 
-    Node rootNode; Camera cam;
-    
-    AssetManager assetManager;
+	// Application-level members
+	BasicApplication app;
+	AssetManager assetManager;
     InputManager inputManager;
     AppStateManager stateManager;
     
+    // Scene-graph members
+    Node guiNode;
+    Node rootNode; 
+	Camera cam;
+    
+	// General members
     int gameScreenWidth;
     int gameScreenHeight;
+	
+	// Message system members
+	List messageList = new ArrayList<String>;
 	
 	public BlankAppState(String directory){
 		this.directoryName = directory;
@@ -70,9 +75,22 @@ public class BlankAppState extends AbstractAppState{
     @Override
     public void cleanup() {
         super.cleanup();
-    }
+	}
 	
-	InputListener inputListener = new InputListener();
+	// Prototype message system
+	public void postMessage(String message){
+		// Add message to list
+		messageList.add(message);
+	}
+	
+	public void checkMessages(){
+		if(messageList.size() > 0){
+			// Loop through messages and remove messages that were worked on
+			// We could either look at all messages or a certain number
+		}
+	}
+	
+    InputListener inputListener = new InputListener();
 	public class InputListener implements ActionListener{
 
         @Override
@@ -82,6 +100,13 @@ public class BlankAppState extends AbstractAppState{
         boolean inputMask[] = new boolean[8];
         
         public boolean[] getInputMask(){ return this.inputMask; }
+		
+		public void registerInputMappings(){
+			//Add custom input mappings here using inputManager
+		}
+		public void removeInputMappings(){
+			//Remove custom input mappings here
+		}
         
     }
     
