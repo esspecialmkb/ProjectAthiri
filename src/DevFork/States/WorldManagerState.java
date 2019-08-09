@@ -36,7 +36,7 @@ import java.util.logging.Logger;
  * @author Michael A. Bradford <SankofaDigitalMedia.com>
  */
 public class WorldManagerState extends AbstractAppState{
-    String directoryName = "C:\\Users\\esspe\\Documents\\jMonkeyProjects\\ProjectAthiri\\database\\";
+    String directoryName;
     BasicApplication app;
     
     // Should 'Final' keyword be used for guiNode, rootNode and Camera?
@@ -94,6 +94,17 @@ public class WorldManagerState extends AbstractAppState{
     public WorldManagerState(Node guiNode, float tileSize){
         this.tileSize = tileSize;
         this.guiNode = guiNode;
+    }
+    
+    public WorldManagerState(String directory){
+        this.tileSize = 24;
+        this.directoryName = directory;
+    }
+    
+    public WorldManagerState(String directory, Node guiNode, float tileSize){
+        this.tileSize = tileSize;
+        this.guiNode = guiNode;
+        this.directoryName = directory;
     }
     
     //  Utility methods
