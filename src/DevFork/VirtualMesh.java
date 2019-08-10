@@ -107,4 +107,17 @@ public class VirtualMesh{
 
         m.updateBound();
     }
+    
+    /*
+    // Prototype Visitor interface for MeshBuilder
+    public interface Visitor{
+        public void visit(VirtualMesh mesh);
+    }
+    
+    public class MeshBuilder implements VirtualMesh.Visitor{
+        public void visit(VirutalMesh mesh){
+            // This method will take on the responsibility of building the mesh
+        }
+    }
+    */
 }
