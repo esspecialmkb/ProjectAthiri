@@ -53,7 +53,9 @@ public class WorldManagerState extends AbstractAppState{
     //  Responsibility #1 TileChunks
     boolean useList = false;
     ArrayList<TileChunk> chunkList;
-    HashMap<Vector2i, TileChunk> chunkMap;  // HashMap using Vector2i for integer chunk positions
+    //  This hash map offers functionality that may facilitate finding chunks
+    // ref: https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html
+    HashMap<Vector2i, TileChunk> chunkMap;  // HashMap using Vector2i for integer chunk positions, use chunkMap.containsKey() to determine if a chunk is listed
     ArrayList<Vector2f> savedChunks;
     int chunkLoadX;
     int chunkLoadY;
