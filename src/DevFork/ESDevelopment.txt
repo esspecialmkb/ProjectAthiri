@@ -1,0 +1,13 @@
+I have been studying various Entity Systems and came across a thread in the jME forum that describes the usage of the Zay- ES system
+
+https://hub.jmonkeyengine.org/t/started-a-blog-series-how-to-use-an-entity-system/35112
+
+http://fprintf.logdown.com/posts/498657-entity-component-system-part-1
+http://fprintf.logdown.com/posts/498675-entity-component-system-part-2
+http://fprintf.logdown.com/posts/506818-entity-component-system-part-3
+http://fprintf.logdown.com/posts/508866-entity-component-system-part-4
+http://fprintf.logdown.com/posts/525318-entity-component-system-part-5
+http://fprintf.logdown.com/posts/548300-entity-component-system-part-6
+
+Case Study:
+https://github.com/jMonkeyEngine-Contributions/zay-es/wiki/Zay-Es-Case-Studies
