@@ -1,8 +1,6 @@
 import java.util.HashMap;
 import java.util.*;
 
-//testing via https://www.tutorialspoint.com/compile_java_online.php
-
 public class HelloWorld{
     HashMap<Long, Integer> entityMap;
     HashMap<Long, Position> positionMap;
@@ -21,6 +19,7 @@ public class HelloWorld{
     }
     
     HelloWorld(){
+        // Setup maps
         entityMap = new HashMap<>();
         positionMap = new HashMap<>();
         meshMap = new HashMap<>();
@@ -29,8 +28,6 @@ public class HelloWorld{
         
         idGen = new EntityIDGen();
         
-        populateEntityMap();
-        
         run();
     } 
     
@@ -38,9 +35,16 @@ public class HelloWorld{
         System.out.println("Populating EntityMap");
         System.out.println();
         
-        for(int i = 0; i < 10 ; i++){
-            newEntity(i);
-        }
+        long entity1 = newEntity(1 + 8);
+        long entity2 = newEntity(1 + 8);
+        long entity3 = newEntity(1 + 8);
+        long entity4 = newEntity(1 + 8);
+        
+        setComponent(entity1, new Position(entity1, 10, 20));
+        setComponent(entity2, new Position(entity1, 15, 20));
+        setComponent(entity3, new Position(entity1, 50, 20));
+        setComponent(entity4, new Position(entity1, 10, 20));
+        
     }
     
     public long newEntity(){
@@ -52,7 +56,7 @@ public class HelloWorld{
         return newID;
     }
     
-    public void newEntity(int componentMask){
+    public long newEntity(int componentMask){
         long newID = newEntity();
         
         String message = "Adding components: ";
@@ -73,9 +77,56 @@ public class HelloWorld{
         
         System.out.println(message += " component mask = " + componentMask);
         System.out.println();
+        
+        return newID;
+    }
+    
+    public Component getComponent(long entityID, int type){
+        if(type == 1){
+            return positionMap.get(entityID);
+        }if(type == 2){
+            return meshMap.get(entityID);
+        }if(type == 4){
+            return nameMap.get(entityID);
+        }if(type == 8){
+            return velocityMap.get(entityID);
+        }
+    }
+    
+    public void setComponent(long entityID, Component component){
+        int type = component.getType();
+        int newType = 0;
+        
+        if(type == 1){
+            if( positionMap.put(entityID,component) == null){
+                newType = 1;
+            }
+        }if(type == 2){
+            if( meshMap.put(entityID,component) == null){
+                newType = newType | 2;
+            }
+        }if(type == 4){
+            if( nameMap.put(entityID,component) == null){
+                newType = newType | 4;
+            }
+        }if(type == 8){
+            if( velocityMap.put(entityID,component) == null){
+                newType = newType | 8;
+            }
+        }
+        
+        if(newType > 0){
+            bitMask = entityMap.get(entityID);
+            entityMap.put(entityID, bitMask | newType);
+        }
+        
     }
     
     public void run(){
+        System.out.println("Setup...");
+        System.out.println();
+        populateEntityMap();
+        
         System.out.println("Starting simulation steps");
         System.out.println();
         
